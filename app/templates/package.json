@@ -4,7 +4,7 @@
   "version": "<%= pkg.version %>",
   "description": "Grunt tasks for Bridge template development",
   "homepage": "<%= pkg.homepage %>",
-  "bugs": "<%= pkg.bugs %>",
+  "bugs": "<%= pkg.homepage %>/issues",
   "author": {
     "name": "<%= pkg.author.name %>",
     "email": "<%= pkg.author.email %>",
