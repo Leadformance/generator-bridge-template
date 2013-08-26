@@ -348,7 +348,11 @@ module.exports = function(grunt) {
     'clean:build',
     'notify:upload'
   ]);
-  grunt.registerTask('server', ['watch']);
+  grunt.registerTask('server', [
+    'jshint',
+    'csslint',
+    'watch'
+  ]);
 
   // Default task.
   grunt.registerTask('default', 'check');
