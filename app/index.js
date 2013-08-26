@@ -28,7 +28,7 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
 
   // have Yeoman greet the user.
   console.log(this.yeoman);
-  console.log('I will download the latest Bridge starter template, and set-up Grunt tasks for testing and uploading template.\nYou will need an API key ("write_template") and a template slot if you want to upload your template with `grunt upload`.\nv'+this.cfg.version);
+  console.log('I will download the latest Bridge starter template, and set-up Grunt tasks for testing and uploading template.\nYou will need an API key ("write_template") and a template slot if you want to upload your template with `grunt upload`.\nv'+this.pkg.version);
 
   var templateTypes = [
     {
