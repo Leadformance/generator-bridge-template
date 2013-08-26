@@ -1,0 +1,34 @@
+{
+  "name": "generator-bridge-template",
+  "private": true,
+  "version": "0.2.0",
+  "description": "A Yeoman generator and Grunt tasks for Bridge template development",
+  "homepage": "https://github.com/Leadformance/generator-bridge-template",
+  "bugs": "https://github.com/Leadformance/generator-bridge-template/issues",
+  "author": {
+    "name": "Julien M.",
+    "email": "",
+    "url": "https://github.com/julienma"
+  },
+  "main": "app/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Leadformance/generator-bridge-template.git"
+  },
+  "dependencies": {
+    "yeoman-generator": "~0.13.0"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "yo": ">=1.0.0-rc.1"
+  },
+  "engines": {
+    "node": ">=0.8.0",
+    "npm": ">=1.2.10"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ]
+}
