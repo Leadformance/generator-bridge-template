@@ -125,26 +125,26 @@ BridgeTemplateGenerator.prototype.projectfiles = function projectfiles() {
   this.template('_bridge-apikey.json', '.bridge-apikey.json');
 };
 
-BridgeTemplateGenerator.prototype.fetchTemplate = function fetchTemplate() {
-  var cb = this.async();
-  var destinationRoot = this.destinationRoot();
+// BridgeTemplateGenerator.prototype.fetchTemplate = function fetchTemplate() {
+//   var cb = this.async();
+//   var destinationRoot = this.destinationRoot();
 
-  if (this.templateType != '') {
-    console.log("Downloading " + this.templateType + " in path: " + destinationRoot);
-//    this.tarball(this.templateType, path.join(destinationRoot, 'temp'), function (err) {
-      this.bowerInstall(this.templateType, {}, function (err) {
-      if (err) {
-        return cb(err);
-      }
-      cb();
-    });
-  }
+//   if (this.templateType != '') {
+//     console.log("Downloading " + this.templateType + " in path: " + destinationRoot);
+// //    this.tarball(this.templateType, path.join(destinationRoot, 'temp'), function (err) {
+//       this.bowerInstall(this.templateType, {}, function (err) {
+//       if (err) {
+//         return cb(err);
+//       }
+//       cb();
+//     });
+//   }
 
-/*  this.remote('julienma', 'Bridget', function (err, remote) {
-    if (err) {
-      return cb(err);
-    }
-    remote.directory('build', path.join(destinationRoot, 'build'));
-    cb();
-  });*/
-};
+// /*  this.remote('julienma', 'Bridget', function (err, remote) {
+//     if (err) {
+//       return cb(err);
+//     }
+//     remote.directory('build', path.join(destinationRoot, 'build'));
+//     cb();
+//   });*/
+// };
