@@ -65,14 +65,14 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
   ];
 
   var prompts = [
-/*    {
+    {
       type: 'list',
       name: 'templateType',
       message: 'What kind of template do you want to use?',
       default: 0,
       choices: templateTypes
     },
-*/    {
+    {
       type: 'input',
       name: 'apiKey',
       message: 'Paste the "write_template" API key for that template:',
