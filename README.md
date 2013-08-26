@@ -19,7 +19,7 @@ OSX users should already have it.
 
 ### Install the generator itself
 
-To install generator-bridge-template, run:
+To install (or update) generator-bridge-template, run:
 
 ```
 $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
