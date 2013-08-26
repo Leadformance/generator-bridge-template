@@ -22,7 +22,7 @@ OSX users should already have it.
 To install generator-bridge-template, run:
 
 ```
-$ npm install -g git+https://git@github.com:Leadformance/generator-bridge-template.git
+$ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
 ```
 
 ## Getting Started
