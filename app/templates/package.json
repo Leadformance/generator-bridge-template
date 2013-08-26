@@ -3,12 +3,12 @@
   "private": true,
   "version": "<%= pkg.version %>",
   "description": "Grunt tasks for Bridge template development",
-  "homepage": "https://github.com/Leadformance/generator-bridge-template",
-  "bugs": "https://github.com/Leadformance/generator-bridge-template/issues",
+  "homepage": "<%= pkg.homepage %>",
+  "bugs": "<%= pkg.bugs %>",
   "author": {
-    "name": "Julien M.",
-    "email": "",
-    "url": "https://github.com/julienma"
+    "name": "<%= pkg.author.name %>",
+    "email": "<%= pkg.author.email %>",
+    "url": "<%= pkg.author.url %>"
  },
   "devDependencies": {
     "grunt": "~0.4.1",
