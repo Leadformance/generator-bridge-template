@@ -30,22 +30,25 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
   console.log(this.yeoman);
   console.log('I will download the latest Bridge starter template, and set-up Grunt tasks for testing and uploading template.\nYou will need an API key ("write_template") and a template slot if you want to upload your template with `grunt upload`.\nv' + this.pkg.version + '\n');
 
+  // download path for starter templates
   var templateTypes = [
+    // value 'none' will not download anything
+    {
+      name: "No thanks, I already have an existing template. I just want the Grunt tasks.",
+      value: "none"
+    },
     {
       name: "Desktop starter template",
-      value: "http://cl.ly/1c3N130Q3B1X/download/template.tar.gz"
+      value: "http://localhost:8000/starter-template-latest.tar.gz"
+      // value: "http://localhost:8000/template.tar.gz"
     },
     {
       name: "Mobile template",
-      value: "mobile-template-latest.zip"
+      value: "http://localhost:8000/mobile-template-latest.tar.gz"
     },
     {
       name: "Facebook template",
-      value: "facebook-template-latest.zip"
-    },
-    {
-      name: "No template, I just want to set-up the Grunt tasks",
-      value: ""
+      value: "http://localhost:8000/server-configs-apache-master.tar.gz"
     }
   ];
 
@@ -127,23 +130,18 @@ BridgeTemplateGenerator.prototype.projectfiles = function projectfiles() {
 
 BridgeTemplateGenerator.prototype.fetchTemplate = function fetchTemplate() {
   var cb = this.async();
-  var destinationRoot = this.destinationRoot();
 
-  if (this.templateType != '') {
-    console.log("Downloading " + this.templateType + " in path: " + destinationRoot);
-      this.tarball(this.templateType, process.cwd(), function (err) {
-      // this.bowerInstall(this.templateType, {}, function (err) {
+  // if user chose a template to download (not 'false')
+  if (this.templateType != "none") {
+    var self = this;
+    // download tar.gz'd template in cwd
+    this.tarball(this.templateType, this.destinationRoot(), function (err) {
       if (err) {
+        self.log.error('Cannot download template from remote. Check your internet connection and try again.');
         throw err;
       }
+      self.log.create("Starter template files created in current directory, now move on!");
+      cb();
     });
   }
-
-/*  this.remote('julienma', 'Bridget', function (err, remote) {
-    if (err) {
-      return cb(err);
-    }
-    remote.directory('build', path.join(destinationRoot, 'build'));
-    cb();
-  });*/
 };
