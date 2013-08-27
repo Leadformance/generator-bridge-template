@@ -349,8 +349,6 @@ module.exports = function(grunt) {
     'notify:upload'
   ]);
   grunt.registerTask('server', [
-    'jshint',
-    'csslint',
     'watch'
   ]);
 
