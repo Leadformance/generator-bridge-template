@@ -3,7 +3,7 @@
 A generator for Leadformance Bridge templates, using [Yeoman](http://yeoman.io).
 He will help you scaffold templates, and create [Grunt](http://gruntjs.com) tasks to test and upload your templates on Bridge.
 
-![](http://i.imgur.com/envEYKC.png)
+![](http://i.imgur.com/CYiHTVE.png)
 
 ## Before starting...
 
