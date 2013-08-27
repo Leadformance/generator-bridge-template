@@ -73,7 +73,25 @@ You can run additional tasks, like:
 
 ## FAQ
 
-To be completed
+### I heard you added nice new tasks, how do I update them?
+
+Update the generator itself
+
+```
+$ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
+```
+
+Then, while in the folder of the template, generate Grunt tasks once again
+
+```
+$ yo angular
+```
+
+and select "Generate Grunt tasks only" when asked if you want to scaffold a template.
+
+Done, you can use the updated tasks!
+
+**Note:** you should update the tasks as soon as you resume work on a previous project. This will give you the latest features, and as tasks are part of the repo, everyone will benefit from an update.
 
 ## Best-practices
 
