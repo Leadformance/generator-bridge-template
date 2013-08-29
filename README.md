@@ -84,7 +84,7 @@ $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.g
 Then, while in the folder of the template, generate Grunt tasks once again
 
 ```
-$ yo angular
+$ yo bridge-template
 ```
 
 and select "Generate Grunt tasks only" when asked if you want to scaffold a template.
