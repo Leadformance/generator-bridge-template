@@ -45,16 +45,15 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     },
     {
       name: "Desktop starter template",
-      value: "http://localhost:8000/starter-template-latest.tar.gz"
-      // value: "http://localhost:8000/template.tar.gz"
+      value: "http://tools.leadformance.com/templates/starter-template-latest.tar.gz"
     },
     {
       name: "Mobile template",
-      value: "http://localhost:8000/mobile-template-latest.tar.gz"
+      value: "http://tools.leadformance.com/templates/mobile-template-latest.tar.gz"
     },
     {
       name: "Facebook template",
-      value: "http://localhost:8000/server-configs-apache-master.tar.gz"
+      value: "http://tools.leadformance.com/templates/facebook-template-latest.tar.gz"
     }
   ];
 
