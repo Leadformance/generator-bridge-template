@@ -69,7 +69,7 @@ module.exports = function(grunt) {
       },
       all: {
         // do not lint external resources (like bootstrap / jquery), too messy
-        src: ['<%= dirs.js %>/**/*.js', '!**/bootstrap.js', '!**/jquery.*.js']
+        src: ['<%= dirs.js %>/**/*.js', '!**/*bootstrap*.js', '!**/*jquery*.js']
       }
     },
     /* Lint CSS */
@@ -90,7 +90,7 @@ module.exports = function(grunt) {
           // 'errors': false,
           'duplicate-background-images': false,
           // 'duplicate-properties': false,
-          // 'empty-rules': false,
+          'empty-rules': false,
           // 'selector-max-approaching': false,
           // 'gradients': false,
           // 'fallback-colors': false,
@@ -108,12 +108,12 @@ module.exports = function(grunt) {
           // 'shorthand': false,
           // 'text-indent': false,
           'unique-headings': false,
-          'universal-selector': false
+          'universal-selector': false,
           // 'unqualified-attributes': false,
           // 'vendor-prefix': false,
-          // 'zero-units': false
+          'zero-units': false
         },
-        src: ['<%= dirs.css %>/**/*.css', '!**/bootstrap.css']
+        src: ['<%= dirs.css %>/**/*.css', '!**/*bootstrap*.css']
       }
     },
     /* Concat JS */
