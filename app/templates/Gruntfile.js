@@ -97,7 +97,7 @@ module.exports = function(grunt) {
           'font-sizes': false,
           // 'font-faces': false,
           'floats': false,
-          // 'star-property-hack': false,
+          'star-property-hack': false,
           'outline-none': false,
           // 'import': false,
           'ids': false,
