@@ -98,7 +98,9 @@ Done, you can use the updated tasks!
 This might be a permission issue.
 [This StackOverflow](http://stackoverflow.com/a/16151707) post might help you:
 
-`sudo chown -R `whoami` ~/.npm`
+```
+sudo chown -R `whoami` ~/.npm
+```
 
 Then try installing again.
 
