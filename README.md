@@ -93,6 +93,17 @@ Done, you can use the updated tasks!
 
 **Note:** you should update the tasks as soon as you resume work on a previous project. This will give you the latest features, and as tasks are part of the repo, everyone will benefit from an update.
 
+### I get `npm ERR!` errors when installing/updating the generator!
+
+This might be a permission issue.
+[This StackOverflow](http://stackoverflow.com/a/16151707) post might help you:
+
+`sudo chown -R `whoami` ~/.npm`
+
+Then try installing again.
+
+If you still have issue, try prefixing your commands with sudo, like `sudo npm install ...`.
+
 ## Best-practices
 
 ### SCSS & JS
