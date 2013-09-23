@@ -2,6 +2,7 @@
 var util = require('util');
 var path = require('path');
 var yeoman = require('yeoman-generator');
+var request = require('yeoman-generator/node_modules/request');
 
 // init generator
 var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(args, options, config) {
@@ -90,44 +91,115 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
       message: 'In order to user `grunt upload`, I need your API key for that template (with "write_template" rights):',
       default: this.existingCfg.apiKey,
       validate: function( value ){
-        if(value != '') {
+        if(value !== '') {
           return true;
         } else {
           return "Please enter the full API key";
         }
       }
-    },
-    {
-      // API server on which the key is created
-      type: 'list',
-      name: 'serverUrl',
-      message: 'On which server is this key created?',
-      default: this._.findIndex(serverUrls, { value: this.existingCfg.serverUrl }),
-      choices: serverUrls
-    },
-    {
-      // id of the template slot to upload the template to
-      type: 'input',
-      name: 'templateSlot',
-      message: 'What is the template slot ID?',
-      default: this.existingCfg.templateSlot,
-      validate: function( value ) {
-        var valid = !isNaN(parseFloat(value));
-        return valid || "Please enter a number";
-      },
-      filter: Number
-    },
+    }
   ];
 
   // make answers available for next functions (specifically .template)
   this.prompt(prompts, function (props) {
-    this.apiKey = props.apiKey;
-    this.serverUrl = props.serverUrl;
-    this.templateSlot = props.templateSlot;
     this.templateType = props.templateType;
+    this.apiKey = props.apiKey;
 
-    cb();
+    // make serverUrls array available
+    this.serverUrls = serverUrls;
+
+    this._getApiDetails(function(data, err) {
+      if(data !== null || data !== undefined) {
+        this.log.info("Allright, your key is valid on " + this._.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
+        var templateSlots = [];
+        // loop over the template API response, orderered by latest created
+        this._(data)
+          .sortBy(function(slot) {
+            return slot.id;
+          })
+          .reverse()
+          .forEach(function(slot) {
+            // and push each template into the prompt
+            templateSlots.push(
+              {
+                name: slot.name + ' (' + slot.id + ')',
+                value: slot.id
+              }
+            );
+          });
+
+        var promptTemplateId = [
+          {
+            // select template ID from API results
+            type: 'list',
+            name: 'templateSlot',
+            message: 'Which template slot do you want to use?',
+            default: this._.findIndex(templateSlots, { value: this.existingCfg.templateSlot }),
+            choices: templateSlots
+          }
+        ];
+
+        this.prompt(promptTemplateId, function (props) {
+          this.templateSlot = props.templateSlot;
+
+          // now that we have all our answers, continue with cb()
+          cb();
+        }.bind(this));
+      // if API does not work (wrong key / url), display error
+      } else this.log.error(err);
+    }.bind(this));
   }.bind(this));
+};
+
+// find server and available template slots based on API key
+BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callback) {
+
+  this.log.info("Howdy, I am testing your API key on our servers! This could take up to 30s, please be patient...");
+
+  var apiFailCounter = 0;
+  var apiErrorCounter = 0;
+  var apiRequestCounter = 0;
+  var ln = this.serverUrls.length;
+  var dataSaved;
+
+  // loop through all the servers
+  this._.forEach(this.serverUrls, function(serverUrl) {
+    var url = serverUrl.value + '/templates.json?oauth_token=' + this.apiKey;
+    // and try them until we find the one on which the API key is valid
+    request.get({url: url, json: true}, function (error, response, data) {
+      apiRequestCounter++;
+
+      // process response after each request
+      if (error) {
+        apiErrorCounter++;
+      } else if (!error && response.statusCode == 401) {
+        apiFailCounter++;
+      } else if (!error && response.statusCode == 200 && data[0].id !== undefined) {
+        // we got an answer, and it's actually a valid one
+        this.serverUrl = serverUrl.value;
+        dataSaved = data;
+      }
+
+      // once we processed ALL requests...
+      if (apiRequestCounter == ln) {
+        // we have a valid server!
+        if (this.serverUrl !== undefined) {
+          callback(dataSaved, null);
+        // we cycled through all servers and had errors with each one
+        } else if (apiErrorCounter == ln) {
+          callback(null, "API Error, the API seems to be unavailable. Make sure you're connected to the Internet, and try again in few minutes.");
+        // we cycled through all servers without finding a valid one
+        } else if (apiFailCounter == ln) {
+          callback(null, "API Error, your API key seems to be wrong. Check your key and try again.");
+        // we got other error (probably because of wrong key)
+        } else {
+          callback(null, "API Error, something unexpected happened. Check your key, try again, and contact us if it fails again.");
+        }
+      }
+
+    }.bind(this));
+  }, this);
+
 };
 
 // copy main tasks files
@@ -144,8 +216,6 @@ BridgeTemplateGenerator.prototype.apikey = function apikey() {
 
 // fetch starter templates remotely
 BridgeTemplateGenerator.prototype.fetchTemplate = function fetchTemplate() {
-  var cb = this.async();
-
   // if user chose a template to download (not 'false')
   if (this.templateType != "none") {
     var self = this;
@@ -156,7 +226,6 @@ BridgeTemplateGenerator.prototype.fetchTemplate = function fetchTemplate() {
         throw err;
       }
       self.log.create("Starter template files created in current directory, now move on!");
-      cb();
     });
   }
 };
