@@ -188,6 +188,14 @@ module.exports = function(grunt) {
                 '!<%= dirs.img %>/**'],
           dest: '<%= dirs.output %>'
         }]
+      },
+      gif: {
+        files: [{
+          expand: true,
+          cwd:  '<%= dirs.img %>',
+          src:  '**/*.{gif,webp}',
+          dest: '<%= dirs.output %>/<%= dirs.img %>'
+        }]
       }
     },
     /* Rev assets */

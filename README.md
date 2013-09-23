@@ -93,9 +93,22 @@ Done, you can use the updated tasks!
 
 **Note:** you should update the tasks as soon as you resume work on a previous project. This will give you the latest features, and as tasks are part of the repo, everyone will benefit from an update.
 
+### I get `npm ERR!` errors when installing/updating the generator!
+
+This might be a permission issue.
+[This StackOverflow](http://stackoverflow.com/a/16151707) post might help you:
+
+```
+sudo chown -R `whoami` ~/.npm
+```
+
+Then try installing again.
+
+If you still have issue, try prefixing your commands with sudo, like `sudo npm install ...`.
+
 ## Best-practices
 
-### SCSS & JS
+### CSS & JS
 
 Split your CSS & JS in as many files as you need. They will all be concatenated in alphabetic order.
 
@@ -103,8 +116,6 @@ Name them so they will be included in the order you need.
 Ex: _1_bootstrap.js; _2_jquery.scrollpane.js; _3_base_template.js; _4_custom.js
 
 - In your html, reference ONLY /javascripts/combined.min.js and /stylesheets/combined.min.css.
-
-SCSS files will be automatically processed to valid CSS.
 
 ## License
 
