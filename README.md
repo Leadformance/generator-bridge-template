@@ -108,7 +108,7 @@ If you still have issue, try prefixing your commands with sudo, like `sudo npm i
 
 ## Best-practices
 
-### SCSS & JS
+### CSS & JS
 
 Split your CSS & JS in as many files as you need. They will all be concatenated in alphabetic order.
 
@@ -116,8 +116,6 @@ Name them so they will be included in the order you need.
 Ex: _1_bootstrap.js; _2_jquery.scrollpane.js; _3_base_template.js; _4_custom.js
 
 - In your html, reference ONLY /javascripts/combined.min.js and /stylesheets/combined.min.css.
-
-SCSS files will be automatically processed to valid CSS.
 
 ## License
 
