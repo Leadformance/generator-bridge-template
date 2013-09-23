@@ -109,7 +109,7 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     this.serverUrls = serverUrls;
 
     this._getApiDetails(function(data, err) {
-      if(data !== null) {
+      if(data !== null || data !== undefined) {
         this.log.info("Allright, your key is valid on " + this._.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
         var templateSlots = [];
         // loop over the template API response, orderered by latest created
@@ -160,6 +160,7 @@ BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callb
   var apiErrorCounter = 0;
   var apiRequestCounter = 0;
   var ln = this.serverUrls.length;
+  var dataSaved;
 
   // loop through all the servers
   this._.forEach(this.serverUrls, function(serverUrl) {
@@ -176,13 +177,14 @@ BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callb
       } else if (!error && response.statusCode == 200 && data[0].id !== undefined) {
         // we got an answer, and it's actually a valid one
         this.serverUrl = serverUrl.value;
+        dataSaved = data;
       }
 
       // once we processed ALL requests...
       if (apiRequestCounter == ln) {
         // we have a valid server!
         if (this.serverUrl !== undefined) {
-          callback(data, null);
+          callback(dataSaved, null);
         // we cycled through all servers and had errors with each one
         } else if (apiErrorCounter == ln) {
           callback(null, "API Error, the API seems to be unavailable. Make sure you're connected to the Internet, and try again in few minutes.");
