@@ -47,7 +47,7 @@ Once you answered all the questions, some additional files will be created: thes
 You should commit these new files with the template, so anyone else working on that template will already have the Grunt tasks available.
 
 An additional config file, .bridge-apikey.json, will be generated as well.
-This file should *not* be commited to git, as it contains the API key.
+This file should *not* be committed to git, as it contains the API key.
 A .gitignore file has been generated as well, which excludes .bridge-apikey.json.
 Keep this in mind if you need to edit your .gitignore.
 
