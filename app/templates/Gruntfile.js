@@ -241,13 +241,13 @@ module.exports = function(grunt) {
     /* Upload with cURL */
     shell: {
       check: {
-        command: 'curl --head "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
+        command: 'curl --head --insecure "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
         options: {
           callback: shellCheckCallback
         }
       },
       upload: {
-        command: 'curl -F "template=@<%= dirs.build %>/_template.zip" -F "_method=PUT" "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
+        command: 'curl -F "template=@<%= dirs.build %>/_template.zip" -F "_method=PUT" --insecure "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
         options: {
           callback: shellUploadCallback
         }
