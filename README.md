@@ -51,6 +51,8 @@ This file should *not* be committed to git, as it contains the API key.
 A .gitignore file has been generated as well, which excludes .bridge-apikey.json.
 Keep this in mind if you need to edit your .gitignore.
 
+*Note that this will generate files in the current directory, so be sure to change to a new directory first if you don't want to overwrite existing files.*
+
 ### Using Grunt tasks
 
 Grunt tasks are defined by a `Gruntfile.js` at the root of your template.
