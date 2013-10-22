@@ -106,7 +106,7 @@ module.exports = function(grunt) {
           'qualified-headings': false,
           // 'selector-max': false,
           // 'shorthand': false,
-          // 'text-indent': false,
+          'text-indent': false,
           'unique-headings': false,
           'universal-selector': false,
           // 'unqualified-attributes': false,
