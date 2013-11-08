@@ -189,11 +189,11 @@ module.exports = function(grunt) {
           dest: '<%= dirs.output %>'
         }]
       },
-      gif: {
+      other_images: {
         files: [{
           expand: true,
           cwd:  '<%= dirs.img %>',
-          src:  '**/*.{gif,webp}',
+          src:  '**/*.{gif,webp,ico}',
           dest: '<%= dirs.output %>/<%= dirs.img %>'
         }]
       }
@@ -235,7 +235,7 @@ module.exports = function(grunt) {
     /* Open Finder/Explorer in the .zip folder */
     open : {
       build : {
-        path : '<%= dirs.build %>/'
+        path : '<%= dirs.build %>'
       }
     },
     /* Upload with cURL */
@@ -251,6 +251,17 @@ module.exports = function(grunt) {
         options: {
           callback: shellUploadCallback
         }
+      }
+    },
+    /* Native upload (no cURL) */
+    http_upload: {
+      template: {
+        options: {
+          url: '<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>',
+          method: 'PUT'
+        },
+        src: '<%= dirs.build %>/_template.zip',
+        dest: 'template'
       }
     },
     /* Watch */
@@ -310,7 +321,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-open');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-notify');
-  // grunt.loadNpmTasks('grunt-rev');
+  grunt.loadNpmTasks('grunt-http-upload');
+// grunt.loadNpmTasks('grunt-rev');
   // grunt.loadNpmTasks('grunt-usemin');
 
   // This is required if you use any options.
@@ -351,8 +363,10 @@ module.exports = function(grunt) {
     'copy',
     'compress',
     'clean:output',
-    'shell:check',
-    'shell:upload',
+    // either use cURL to upload (both 'shell' tasks), or the newer 'http_upload' which doesn't need cURL
+    // 'shell:check',
+    // 'shell:upload',
+    'http_upload',
     'clean:build',
     'notify:upload'
   ]);
