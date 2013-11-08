@@ -24,6 +24,7 @@
     "grunt-contrib-compress": "~0.5.2",
     "grunt-open": "~0.2.1",
     "grunt-shell": "~0.3.1",
-    "grunt-notify": "~0.2.11"
+    "grunt-notify": "~0.2.11",
+    "grunt-http-upload": "~0.1.0"
   }
 }
