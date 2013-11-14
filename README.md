@@ -12,18 +12,26 @@ He will help you scaffold templates, and create [Grunt](http://gruntjs.com) task
 [Download NodeJS installer](http://nodejs.org).
 Also available on [Homebrew](http://brew.sh) for OSX users: `brew install node`
 
-### cURL for Windows users
-
-Download and install the latest [cURL](http://curl.haxx.se), needed for the upload task.
-OSX users should already have it.
-
-### Install the generator itself
+### Install (or update) the generator
 
 To install (or update) generator-bridge-template, run:
 
 ```
 $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
 ```
+
+### If it doesn't work
+
+For some reasons, you might need to be an administrator to install it.
+
+- On Windows, you should open your terminal as an admin, then paste the line above. See [this tutorial](http://www.howtogeek.com/howto/windows-vista/run-a-command-as-administrator-from-the-windows-vista-run-box/).
+- On OSX, you can use `sudo`, like this:
+
+```
+$ sudo npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
+```
+
+You should try to [fix this permission issue](#i-get-npm-err-errors-when-installingupdating-the-generator).
 
 ## Getting Started
 
@@ -77,7 +85,7 @@ You can run additional tasks, like:
 
 ### I heard you added nice new tasks, how do I update them?
 
-Update the generator itself
+Update the generator itself ([see full instructions](#install-or-update-the-generator))
 
 ```
 $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
