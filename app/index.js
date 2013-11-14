@@ -71,6 +71,14 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     {
       name: "Client QA (.c)",
       value: "https://api.c.leadformance.com"
+    },
+    {
+      name: "Staging (.s)",
+      value: "https://api.s.leadformance.com"
+    },
+    {
+      name: "Preproduction (.p)",
+      value: "https://api.p.leadformance.com"
     }
   ];
 
