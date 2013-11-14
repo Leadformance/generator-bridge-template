@@ -113,7 +113,7 @@ module.exports = function(grunt) {
           // 'vendor-prefix': false,
           'zero-units': false
         },
-        src: ['<%= dirs.css %>/**/*.css', '!**/*bootstrap*.css']
+        src: ['<%= dirs.css %>/**/*.css', '!**/*bootstrap*.css', '!**/*jquery*.css']
       }
     },
     /* Concat JS */
@@ -193,7 +193,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd:  '<%= dirs.img %>',
-          src:  '**/*.{gif,webp,ico}',
+          src:  '**/*.{gif,webp,ico,svg}',
           dest: '<%= dirs.output %>/<%= dirs.img %>'
         }]
       }
