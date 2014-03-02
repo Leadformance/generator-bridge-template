@@ -2,7 +2,8 @@
 var util = require('util');
 var path = require('path');
 var yeoman = require('yeoman-generator');
-var request = require('yeoman-generator/node_modules/request');
+var request = require('request');
+var _ = require('lodash');
 
 // init generator
 var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(args, options, config) {
@@ -45,15 +46,15 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
       value: "none"
     },
     {
-      name: "Desktop starter template",
+      name: "Desktop starter template - OVERWRITE files in the current dir",
       value: "http://tools.leadformance.com/templates/starter-template-latest.tar.gz"
     },
     {
-      name: "Mobile template",
+      name: "Mobile template - OVERWRITE files in the current dir",
       value: "http://tools.leadformance.com/templates/mobile-template-latest.tar.gz"
     },
     {
-      name: "Facebook template",
+      name: "Facebook template - OVERWRITE files in the current dir",
       value: "http://tools.leadformance.com/templates/facebook-template-latest.tar.gz"
     }
   ];
@@ -118,10 +119,10 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
 
     this._getApiDetails(function(data, err) {
       if(data !== null || data !== undefined) {
-        this.log.info("Allright, your key is valid on " + this._.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
+        this.log.info("Allright, your key is valid on " + _.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
         var templateSlots = [];
         // loop over the template API response, orderered by latest created
-        this._(data)
+        _(data)
           .sortBy(function(slot) {
             return slot.id;
           })
@@ -142,7 +143,7 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
             type: 'list',
             name: 'templateSlot',
             message: 'Which template slot do you want to use?',
-            default: this._.findIndex(templateSlots, { value: this.existingCfg.templateSlot }),
+            default: _.findIndex(templateSlots, { value: this.existingCfg.templateSlot }),
             choices: templateSlots
           }
         ];
@@ -171,7 +172,7 @@ BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callb
   var dataSaved;
 
   // loop through all the servers
-  this._.forEach(this.serverUrls, function(serverUrl) {
+  _.forEach(this.serverUrls, function(serverUrl) {
     var url = serverUrl.value + '/templates.json?oauth_token=' + this.apiKey;
     // and try them until we find the one on which the API key is valid
     request.get({url: url, json: true}, function (error, response, data) {
