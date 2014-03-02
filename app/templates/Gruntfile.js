@@ -80,7 +80,7 @@ module.exports = function(grunt) {
           'important': false,
           'adjoining-classes': false,
           // 'known-properties': false,
-          // 'box-sizing': false,
+          'box-sizing': false,
           'box-model': false,
           // 'overqualified-elements': false,
           // 'display-property-grouping': false,
