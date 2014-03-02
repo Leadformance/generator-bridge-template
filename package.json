@@ -1,7 +1,7 @@
 {
   "name": "generator-bridge-template",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A Yeoman generator and Grunt tasks for Bridge template development",
   "homepage": "https://github.com/Leadformance/generator-bridge-template",
   "bugs": "https://github.com/Leadformance/generator-bridge-template/issues",
