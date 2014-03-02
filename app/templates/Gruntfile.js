@@ -154,12 +154,13 @@ module.exports = function(grunt) {
       build: {
         options: {
           optimizationLevel: 3,
-          progressive: true
+          progressive: true,
+          cache: false
         },
         files: [{
           expand: true,
           cwd:  '<%= dirs.img %>',
-          src:  '**/*.{png,jpg,jpeg}',
+          src:  '**/*.{png,jpg,jpeg,gif}',
           dest: '<%= dirs.output %>/<%= dirs.img %>'
         }]
       }
@@ -193,7 +194,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd:  '<%= dirs.img %>',
-          src:  '**/*.{gif,webp,ico,svg}',
+          src:  '**/*.{webp,ico,svg}',
           dest: '<%= dirs.output %>/<%= dirs.img %>'
         }]
       }
@@ -322,7 +323,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-http-upload');
-// grunt.loadNpmTasks('grunt-rev');
+  // grunt.loadNpmTasks('grunt-rev');
   // grunt.loadNpmTasks('grunt-usemin');
 
   // This is required if you use any options.
