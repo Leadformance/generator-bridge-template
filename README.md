@@ -130,3 +130,8 @@ Ex: _1_bootstrap.js; _2_jquery.scrollpane.js; _3_base_template.js; _4_custom.js
 ## License
 
 [MIT License](http://en.wikipedia.org/wiki/MIT_License)
+
+# TODO
+
+- [ ] Use SCSS preprocessor
+- [ ] Shrink CSS with grunt-uncss - [See how to use](http://addyosmani.com/blog/removing-unused-css/).
