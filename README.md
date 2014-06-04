@@ -17,6 +17,7 @@ Also available on [Homebrew](http://brew.sh) for OSX users: `brew install node`
 To install (or update) generator-bridge-template, run:
 
 ```
+$ npm cache clean
 $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
 ```
 
@@ -88,6 +89,7 @@ You can run additional tasks, like:
 Update the generator itself ([see full instructions](#install-or-update-the-generator))
 
 ```
+$ npm cache clean
 $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
 ```
 
