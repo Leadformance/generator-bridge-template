@@ -110,6 +110,7 @@ This might be a permission issue.
 
 ```
 sudo chown -R `whoami` ~/.npm
+sudo chown -R `whoami` /usr/local/lib/node_modules
 ```
 
 Then try installing again.
