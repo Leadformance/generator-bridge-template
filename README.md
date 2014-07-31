@@ -9,8 +9,13 @@ He will help you scaffold templates, and create [Grunt](http://gruntjs.com) task
 
 ### Install NodeJS
 
-[Download NodeJS installer](http://nodejs.org).
-Also available on [Homebrew](http://brew.sh) for OSX users: `brew install node`
+See instructions on [nodejs.org](http://nodejs.org).
+
+If you're using OSX, it is strongly recommanded to install through [Homebrew](http://brew.sh): 
+```
+brew install node --without-npm
+curl -L https://npmjs.org/install.sh | sh
+```
 
 ### Install (or update) the generator
 
