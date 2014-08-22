@@ -13,9 +13,12 @@ See instructions on [nodejs.org](http://nodejs.org).
 
 If you're using OSX, it is strongly recommanded to install through [Homebrew](http://brew.sh): 
 ```
+brew update
 brew install node --without-npm
 curl -L https://npmjs.org/install.sh | sh
 ```
+
+To uninstall a bad installation of node on OSX, please follow [http://stackoverflow.com/a/11178106](http://stackoverflow.com/a/11178106).
 
 ### Install (or update) the generator
 
