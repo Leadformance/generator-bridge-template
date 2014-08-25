@@ -28,6 +28,8 @@ To install (or update) generator-bridge-template, run:
 $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
 ```
 
+Don't forget to `npm cache clean` if you want to update.
+
 ### If it doesn't work
 
 For some reasons, you might need to be an administrator to install it.
@@ -96,6 +98,7 @@ You can run additional tasks, like:
 Update the generator itself ([see full instructions](#install-or-update-the-generator))
 
 ```
+$ npm cache clean
 $ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
 ```
 
