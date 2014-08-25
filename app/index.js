@@ -179,7 +179,7 @@ BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callb
   _.forEach(this.serverUrls, function(serverUrl) {
     var url = serverUrl.value + '/templates.json?oauth_token=' + this.apiKey;
     // and try them until we find the one on which the API key is valid
-    request.get({url: url, json: true}, function (error, response, data) {
+    request.get({url: url, json: true, strictSSL: false}, function (error, response, data) {
       apiRequestCounter++;
 
       // process response after each request
