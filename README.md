@@ -1,3 +1,22 @@
+# This version should not be used!
+
+This version is based on v0.4.5, and completely disables SSL checks (in both the yeoman generator and grunt tasks), so it could work even if the Leadformance SSL certificate is expired / not valid.
+
+Obviously, unless there's an SSL issue, it should not be used.
+
+To install it (and overwrite any previous version):
+
+```
+npm cache clean
+npm install -g git+https://github.com/Leadformance/generator-bridge-template.git#fix-nossl
+```
+
+Then generate new Grunt tasks for each project, and overwrite any file if you're asked:
+
+```
+yo bridge-template
+```
+
 # generator-bridge-template
 
 A generator for Leadformance Bridge templates, using [Yeoman](http://yeoman.io).
