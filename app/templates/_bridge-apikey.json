@@ -1,5 +1,6 @@
 {
   "apiKey": "<%= apiKey %>",
   "serverUrl": "<%= serverUrl %>",
-  "templateSlot": "<%= templateSlot %>"
+  "templateSlot": "<%= templateSlot %>",
+  "templateSlotName": "<%= templateSlotName %>"
 }

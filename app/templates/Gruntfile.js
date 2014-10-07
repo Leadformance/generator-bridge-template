@@ -377,7 +377,11 @@ module.exports = function(grunt) {
   grunt.registerTask('server', [
     'watch'
   ]);
-
+  grunt.registerTask('template', function() {
+    config = grunt.file.readJSON('.bridge-apikey.json');
+    grunt.log.write("You work on the template named '" + config.templateSlotName + "' (#" + config.templateSlot + ")");
+  });
+  
   // Default task.
   grunt.registerTask('default', 'check');
 

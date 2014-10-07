@@ -114,14 +114,16 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     this.templateType = props.templateType;
     this.apiKey = props.apiKey;
 
+    // init templateSlot only if there is an apiKey 
     if (this.apiKey != '') {
       // make serverUrls array available
       this.serverUrls = serverUrls;
-
+      this.existingCfg.templateSlot = parseInt(this.existingCfg.templateSlot);
       this._getApiDetails(function(data, err) {
         if(data !== null || data !== undefined) {
           this.log.info("Allright, your key is valid on " + _.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
           var templateSlots = [];
+          var templateSlotsName = [];
           // loop over the template API response, orderered by latest created
           _(data)
             .sortBy(function(slot) {
@@ -136,6 +138,7 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
                   value: slot.id
                 }
               );
+              templateSlotsName[slot.id] = slot.name;
             });
 
           var promptTemplateId = [
@@ -151,6 +154,7 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
 
           this.prompt(promptTemplateId, function (props) {
             this.templateSlot = props.templateSlot;
+            this.templateSlotName = templateSlotsName[this.templateSlot];
 
             // now that we have all our answers, continue with cb()
             cb();
@@ -161,6 +165,7 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     } else {
       this.serverUrl = "";
       this.templateSlot = "";
+      this.templateSlotName = "";      
       cb();
     }
   }.bind(this));
