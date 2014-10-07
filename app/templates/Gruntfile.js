@@ -197,6 +197,14 @@ module.exports = function(grunt) {
           src:  '**/*.{webp,ico,svg}',
           dest: '<%= dirs.output %>/<%= dirs.img %>'
         }]
+      },
+      other_json: {
+        files: [{
+          expand: true,
+          cwd:  '<%= dirs.js %>',
+          src:  '**/*.json',
+          dest: '<%= dirs.output %>/<%= dirs.js %>'
+        }]
       }
     },
     /* Rev assets */
