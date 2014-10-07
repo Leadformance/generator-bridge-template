@@ -352,25 +352,28 @@ module.exports = function(grunt) {
     'open:build',
     'notify:build'
   ]);
-  grunt.registerTask('upload', [
-    'jshint',
-    'csslint',
-    'clean',
-    'concat',
-    'uglify',
-    'clean:temp',
-    'cssmin',
-    'imagemin',
-    'copy',
-    'compress',
-    'clean:output',
-    // either use cURL to upload (both 'shell' tasks), or the newer 'http_upload' which doesn't need cURL
-    // 'shell:check',
-    // 'shell:upload',
-    'http_upload',
-    'clean:build',
-    'notify:upload'
-  ]);
+  grunt.registerTask('upload', function() {
+    config = grunt.file.readJSON('.bridge-apikey.json');
+    if (config.apiKey !== '') {
+      grunt.task.run('jshint',
+      'csslint',
+      'clean',
+      'concat',
+      'uglify',
+      'clean:temp',
+      'cssmin',
+      'imagemin',
+      'copy',
+      'compress',
+      'clean:output',
+      'http_upload',
+      'clean:build',
+      'notify:upload');
+    } else {
+      grunt.log.error("HEY, you can't use 'grunt upload' because the API key is missing. Use 'yo brige-template' to init one.");
+      return false;
+    }
+  });
   grunt.registerTask('server', [
     'watch'
   ]);

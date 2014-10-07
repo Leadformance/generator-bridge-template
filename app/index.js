@@ -104,11 +104,7 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
       message: 'In order to user `grunt upload`, I need your API key for that template (with "write_template" rights):',
       default: this.existingCfg.apiKey,
       validate: function( value ){
-        if(value !== '') {
-          return true;
-        } else {
-          return "Please enter the full API key";
-        }
+        return true;
       }
     }
   ];
@@ -118,49 +114,55 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     this.templateType = props.templateType;
     this.apiKey = props.apiKey;
 
-    // make serverUrls array available
-    this.serverUrls = serverUrls;
+    if (this.apiKey != '') {
+      // make serverUrls array available
+      this.serverUrls = serverUrls;
 
-    this._getApiDetails(function(data, err) {
-      if(data !== null || data !== undefined) {
-        this.log.info("Allright, your key is valid on " + _.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
-        var templateSlots = [];
-        // loop over the template API response, orderered by latest created
-        _(data)
-          .sortBy(function(slot) {
-            return slot.id;
-          })
-          .reverse()
-          .forEach(function(slot) {
-            // and push each template into the prompt
-            templateSlots.push(
-              {
-                name: slot.name + ' (' + slot.id + ')',
-                value: slot.id
-              }
-            );
-          });
+      this._getApiDetails(function(data, err) {
+        if(data !== null || data !== undefined) {
+          this.log.info("Allright, your key is valid on " + _.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
+          var templateSlots = [];
+          // loop over the template API response, orderered by latest created
+          _(data)
+            .sortBy(function(slot) {
+              return slot.id;
+            })
+            .reverse()
+            .forEach(function(slot) {
+              // and push each template into the prompt
+              templateSlots.push(
+                {
+                  name: slot.name + ' (' + slot.id + ')',
+                  value: slot.id
+                }
+              );
+            });
 
-        var promptTemplateId = [
-          {
-            // select template ID from API results
-            type: 'list',
-            name: 'templateSlot',
-            message: 'Which template slot do you want to use?',
-            default: _.findIndex(templateSlots, { value: this.existingCfg.templateSlot }),
-            choices: templateSlots
-          }
-        ];
+          var promptTemplateId = [
+            {
+              // select template ID from API results
+              type: 'list',
+              name: 'templateSlot',
+              message: 'Which template slot do you want to use?',
+              default: _.findIndex(templateSlots, { value: this.existingCfg.templateSlot }),
+              choices: templateSlots
+            }
+          ];
 
-        this.prompt(promptTemplateId, function (props) {
-          this.templateSlot = props.templateSlot;
+          this.prompt(promptTemplateId, function (props) {
+            this.templateSlot = props.templateSlot;
 
-          // now that we have all our answers, continue with cb()
-          cb();
-        }.bind(this));
-      // if API does not work (wrong key / url), display error
-      } else this.log.error(err);
-    }.bind(this));
+            // now that we have all our answers, continue with cb()
+            cb();
+          }.bind(this));
+        // if API does not work (wrong key / url), display error
+        } else this.log.error(err);
+      }.bind(this));
+    } else {
+      this.serverUrl = "";
+      this.templateSlot = "";
+      cb();
+    }
   }.bind(this));
 };
 
