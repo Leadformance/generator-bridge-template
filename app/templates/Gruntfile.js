@@ -160,7 +160,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd:  '<%= dirs.img %>',
-          src:  '**/*.{png,jpg,jpeg,gif}',
+          src:  '**/*.{png,jpg,jpeg,gif,PNG,JPG,JPEG,GIF}',
           dest: '<%= dirs.output %>/<%= dirs.img %>'
         }]
       }
@@ -194,7 +194,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd:  '<%= dirs.img %>',
-          src:  '**/*.{webp,ico,svg}',
+          src:  '**/*.{webp,ico,svg,WEBP,ICO,SVG}',
           dest: '<%= dirs.output %>/<%= dirs.img %>'
         }]
       },
