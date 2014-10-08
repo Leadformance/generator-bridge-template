@@ -11,6 +11,7 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
 
   // install NPM dependencies at the end
   this.on('end', function () {
+    this._checkVersion();
     this.installDependencies({ bower: false, npm: true, skipInstall: options['skip-install'] });
   });
 
@@ -24,6 +25,9 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
     // default values if config file doesn't exist
     this.existingCfg = '';
   }
+
+  this.githubVersionTag = '';
+  this.githubVersionCommit = '';  
 };
 
 util.inherits(BridgeTemplateGenerator, yeoman.generators.Base);
@@ -31,6 +35,9 @@ util.inherits(BridgeTemplateGenerator, yeoman.generators.Base);
 // main contents
 BridgeTemplateGenerator.prototype.askFor = function askFor() {
   var cb = this.async();
+
+  //Get the last live version
+  this._getGithubVersion(function() {}.bind(this));  
 
   // have Yeoman greet the user.
   console.log(this.yeoman);
@@ -172,6 +179,20 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
 };
 
 // find server and available template slots based on API key
+BridgeTemplateGenerator.prototype._getGithubVersion = function _getGithubVersion(callback) {
+  request.get({url:'https://api.github.com/repos/Leadformance/generator-bridge-template/tags',json: true,timeout: 5000,headers: {'User-Agent': 'request'}}, function (error, response, data) {
+    if (!error && response.statusCode == 200) {
+      if(data !== null || data !== undefined) {
+        callback( data[0].name,data[0].commit.sha);
+        this.githubVersionTag = data[0].name;
+        this.githubVersionCommit = data[0].commit.sha;
+      }    
+    }
+  }.bind(this));  
+
+};
+
+// find server and available template slots based on API key
 BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callback) {
 
   this.log.info("Howdy, I am testing your API key on our servers! This could take up to 30s, please be patient...");
@@ -231,7 +252,29 @@ BridgeTemplateGenerator.prototype.app = function app() {
 
 // generate config file based on prompt answers
 BridgeTemplateGenerator.prototype.apikey = function apikey() {
+  this._sleep(5000);
   this.template('_bridge-apikey.json', '.bridge-apikey.json');
+};
+
+// create a wait loop
+BridgeTemplateGenerator.prototype._sleep = function _sleep(milliSeconds) {
+  var startTime = new Date().getTime();
+  while (new Date().getTime() < startTime + milliSeconds);
+};
+
+// check is version is up to date and inform the user
+BridgeTemplateGenerator.prototype._checkVersion = function _checkVersion() {
+  if (this.pkg._resolved !== undefined) {
+    var _resolved_array = this.pkg._resolved.split("#");
+    if (_resolved_array.length>=2) {
+      if (_resolved_array[1]!==this.githubVersionCommit) {
+        this.log.info('You have an old version, please run npm install to get the last version released on github as '+ this.githubVersionTag + ' commit('+this.githubVersionCommit+')');
+      } else {
+        this.log.info('Your version is up to date');
+      }
+    }
+    
+  }
 };
 
 // fetch starter templates remotely
