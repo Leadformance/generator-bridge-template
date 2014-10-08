@@ -2,5 +2,7 @@
   "apiKey": "<%= apiKey %>",
   "serverUrl": "<%= serverUrl %>",
   "templateSlot": "<%= templateSlot %>",
-  "templateSlotName": "<%= templateSlotName %>"
-}
+  "templateSlotName": "<%= templateSlotName %>",
+  "githubVersionTag": "<%= githubVersionTag %>",
+  "githubVersionCommit": "<%= githubVersionCommit %>"
+} 
