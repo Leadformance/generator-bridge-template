@@ -25,6 +25,34 @@ module.exports = function(grunt) {
     callback();
   }
 
+  function shellVersionCallback(err, stdout, stderr, callback) {
+    // API should output a string containing the template id after successful upload
+    if (err !== null) {
+      grunt.log.error();
+      grunt.warn("Can't download the last github version of generator-bridge-template");
+    } else {
+
+      var pkgg = grunt.file.readJSON('_version/github_version.json');
+      // Get the last released commit installed from the last "npm install" execution
+      grunt.log.writeln("Github version commit " + pkgg[0].commit.sha + " (tag:"+pkgg[0].name+")");    
+
+      // Get the last released commit installed from the last "yo brisdge-template" execution in this directory
+      var pkgl = grunt.file.readJSON('.bridge-apikey.json');
+      grunt.log.writeln("Local version commit " + pkgl.githubVersionCommit );
+
+      if (pkgl.githubVersionCommit !== pkgg[0].commit.sha) {
+        grunt.log.error("You must run the npm install command to upgrade your version to '"+ pkgg[0].name +"' and run after the command 'yo bridge-template' in this directory");
+        grunt.log.error();
+      } else {
+        grunt.log.ok("Your version is up to date");
+        grunt.log.ok();
+      }      
+      grunt.task.run('clean:version');
+
+    }
+    callback();
+  }
+
   // Project configuration.
 
   grunt.initConfig({
@@ -38,7 +66,8 @@ module.exports = function(grunt) {
       img:    'images',
       output: '_output',
       build:  '_build',
-      temp:   '<%= dirs.output %>/_temp'
+      temp:   '<%= dirs.output %>/_temp',
+      version:  '_version',      
     },
 
     // Task configuration.
@@ -169,7 +198,8 @@ module.exports = function(grunt) {
     clean: {
       temp:   ["<%= dirs.temp %>"],
       output: ["<%= dirs.output %>"],
-      build:  ["<%= dirs.build %>"]
+      build:  ["<%= dirs.build %>"],
+      version:  ["<%= dirs.version %>"]
     },
     /* Copy other files to output directory */
     copy: {
@@ -260,6 +290,12 @@ module.exports = function(grunt) {
         options: {
           callback: shellUploadCallback
         }
+      },
+      get_github_version: {
+        command: 'curl -o _version/github_version.json --create-dirs https://api.github.com/repos/Leadformance/generator-bridge-template/tags ',
+        options: {
+          callback: shellVersionCallback
+        }        
       }
     },
     /* Native upload (no cURL) */
@@ -268,6 +304,15 @@ module.exports = function(grunt) {
         options: {
           url: '<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>',
           method: 'PUT'
+        },
+        src: '<%= dirs.build %>/_template.zip',
+        dest: 'template'
+      },
+      nossl: {
+        options: {
+          url: '<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>',
+          method: 'PUT',
+          rejectUnauthorized: false
         },
         src: '<%= dirs.build %>/_template.zip',
         dest: 'template'
@@ -339,6 +384,20 @@ module.exports = function(grunt) {
 
   // Register tasks.
 
+  // Try upload and track the number of warns and errors before 
+  grunt.registerTask('http_upload_with_fallback', function() {
+    nbUploadWarns = grunt.fail.warncount+grunt.fail.errorcount;
+    grunt.task.run('http_upload:template');
+  });
+
+  // Try upload:nossl if there is a warn or error after the upload
+  grunt.registerTask('http_upload_nossl', function() {
+    if ((grunt.fail.warncount+grunt.fail.errorcount) > nbUploadWarns) {
+      grunt.log.writeln('"http_upload:template" failed, try the "http_upload:nossl" mode');
+      grunt.task.run('http_upload:nossl');
+    }
+  });  
+
   /* Dev: test */
   grunt.registerTask('check', [
     'jshint',
@@ -361,6 +420,7 @@ module.exports = function(grunt) {
     'notify:build'
   ]);
   grunt.registerTask('upload', function() {
+    nbUploadWarns = 0;
     config = grunt.file.readJSON('.bridge-apikey.json');
     if (config.apiKey !== '') {
       grunt.task.run('jshint',
@@ -374,7 +434,8 @@ module.exports = function(grunt) {
       'copy',
       'compress',
       'clean:output',
-      'http_upload',
+      'http_upload_with_fallback',
+      'http_upload_nossl',
       'clean:build',
       'notify:upload');
     } else {
@@ -382,6 +443,13 @@ module.exports = function(grunt) {
       return false;
     }
   });
+
+  grunt.registerTask('check_version', function() {
+    // Get the last github version
+    grunt.task.run('shell:get_github_version');
+
+  });
+
   grunt.registerTask('server', [
     'watch'
   ]);

@@ -126,48 +126,21 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
       // make serverUrls array available
       this.serverUrls = serverUrls;
       this.existingCfg.templateSlot = parseInt(this.existingCfg.templateSlot);
+      this.forceSSL = true;
       this._getApiDetails(function(data, err) {
-        if(data !== null || data !== undefined) {
-          this.log.info("Allright, your key is valid on " + _.find(serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
-          var templateSlots = [];
-          var templateSlotsName = [];
-          // loop over the template API response, orderered by latest created
-          _(data)
-            .sortBy(function(slot) {
-              return slot.id;
-            })
-            .reverse()
-            .forEach(function(slot) {
-              // and push each template into the prompt
-              templateSlots.push(
-                {
-                  name: slot.name + ' (' + slot.id + ')',
-                  value: slot.id
-                }
-              );
-              templateSlotsName[slot.id] = slot.name;
-            });
-
-          var promptTemplateId = [
-            {
-              // select template ID from API results
-              type: 'list',
-              name: 'templateSlot',
-              message: 'Which template slot do you want to use?',
-              default: _.findIndex(templateSlots, { value: this.existingCfg.templateSlot }),
-              choices: templateSlots
-            }
-          ];
-
-          this.prompt(promptTemplateId, function (props) {
-            this.templateSlot = props.templateSlot;
-            this.templateSlotName = templateSlotsName[this.templateSlot];
-
-            // now that we have all our answers, continue with cb()
-            cb();
-          }.bind(this));
+        if(data !== null && data !== undefined) {
+          this._getApiDetailsPromptServers(data);
         // if API does not work (wrong key / url), display error
-        } else this.log.error(err);
+        } else {
+          this.log.info("Issue with SSL certificates, switching to No-SSL mode...");
+          this.forceSSL = false;
+          this._getApiDetails(function(data, err) {
+            if(data !== null && data !== undefined) {
+              this._getApiDetailsPromptServers(data);
+            // if API does not work (wrong key / url), display error
+            } else this.log.error(err);
+          }.bind(this));          
+        }
       }.bind(this));
     } else {
       this.serverUrl = "";
@@ -192,29 +165,76 @@ BridgeTemplateGenerator.prototype._getGithubVersion = function _getGithubVersion
 
 };
 
+// display the prompt to choose the server
+BridgeTemplateGenerator.prototype._getApiDetailsPromptServers = function _getApiDetailsPromptServers(data) {
+  var cb = this.async();
+
+  this.log.info("Allright, your key is valid on " + _.find(this.serverUrls, { value: this.serverUrl }).name + "! I am now grabbing available template slots...");
+  var templateSlots = [];
+  var templateSlotsName = [];
+  // loop over the template API response, orderered by latest created
+  _(data)
+    .sortBy(function(slot) {
+      return slot.id;
+    })
+    .reverse()
+    .forEach(function(slot) {
+      // and push each template into the prompt
+      templateSlots.push(
+        {
+          name: slot.name + ' (' + slot.id + ')',
+          value: slot.id
+        }
+      );
+      templateSlotsName[slot.id] = slot.name;
+    });
+
+  var promptTemplateId = [
+    {
+      // select template ID from API results
+      type: 'list',
+      name: 'templateSlot',
+      message: 'Which template slot do you want to use?',
+      default: _.findIndex(templateSlots, { value: this.existingCfg.templateSlot }),
+      choices: templateSlots
+    }
+  ];
+
+  this.prompt(promptTemplateId, function (props) {
+    this.templateSlot = props.templateSlot;
+    this.templateSlotName = templateSlotsName[this.templateSlot];
+
+    // now that we have all our answers, continue with cb()
+    cb();
+  }.bind(this));  
+};
+
 // find server and available template slots based on API key
 BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callback) {
 
-  this.log.info("Howdy, I am testing your API key on our servers! This could take up to 30s, please be patient...");
+  if (this.forceSSL) this.log.info("Howdy, I am testing your API key on our servers! This could take up to 30s, please be patient...");
 
   var apiFailCounter = 0;
   var apiErrorCounter = 0;
   var apiRequestCounter = 0;
   var ln = this.serverUrls.length;
   var dataSaved;
+  var apiServerInError = [];
 
   // loop through all the servers
   _.forEach(this.serverUrls, function(serverUrl) {
     var url = serverUrl.value + '/templates.json?oauth_token=' + this.apiKey;
     // and try them until we find the one on which the API key is valid
-    request.get({url: url, json: true}, function (error, response, data) {
+    request.get({url: url, json: true, strictSSL:this.forceSSL}, function (error, response, data) {
       apiRequestCounter++;
 
       // process response after each request
       if (error) {
         apiErrorCounter++;
+        apiServerInError.push(serverUrl.name+'->'+error);
       } else if (!error && response.statusCode == 401) {
         apiFailCounter++;
+        apiServerInError.push(serverUrl.name+'->Error Status 401');
       } else if (!error && response.statusCode == 200 && data[0].id !== undefined) {
         // we got an answer, and it's actually a valid one
         this.serverUrl = serverUrl.value;
@@ -228,13 +248,13 @@ BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callb
           callback(dataSaved, null);
         // we cycled through all servers and had errors with each one
         } else if (apiErrorCounter == ln) {
-          callback(null, "API Error, the API seems to be unavailable. Make sure you're connected to the Internet, and try again in few minutes.");
+          callback(null, "API Error on all servers, the API seems to be unavailable. Make sure you're connected to the Internet, and try again in few minutes.");
         // we cycled through all servers without finding a valid one
         } else if (apiFailCounter == ln) {
-          callback(null, "API Error, your API key seems to be wrong. Check your key and try again.");
+          callback(null, "API Error on server(s) '" + apiServerInError.join() + "', your API key seems to be wrong. Check your key and try again.");
         // we got other error (probably because of wrong key)
         } else {
-          callback(null, "API Error, something unexpected happened. Check your key, try again, and contact us if it fails again.");
+          callback(null, "API Error on server(s) '" + apiServerInError.join() + "', something unexpected happened. Check your key, try again, and contact us if it fails again.");
         }
       }
 
