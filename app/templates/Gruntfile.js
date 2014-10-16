@@ -1,3 +1,5 @@
+var request = require('request');
+
 /*global module:false*/
 module.exports = function(grunt) {
 
@@ -21,34 +23,6 @@ module.exports = function(grunt) {
     } else {
       console.log(stdout);
       grunt.log.ok();
-    }
-    callback();
-  }
-
-  function shellVersionCallback(err, stdout, stderr, callback) {
-    // API should output a string containing the template id after successful upload
-    if (err !== null) {
-      grunt.log.error();
-      grunt.warn("Can't download the last github version of generator-bridge-template");
-    } else {
-
-      var pkgg = grunt.file.readJSON('_version/github_version.json');
-      // Get the last released commit installed from the last "npm install" execution
-      grunt.log.writeln("Github version commit " + pkgg[0].commit.sha + " (tag:"+pkgg[0].name+")");    
-
-      // Get the last released commit installed from the last "yo brisdge-template" execution in this directory
-      var pkgl = grunt.file.readJSON('.bridge-apikey.json');
-      grunt.log.writeln("Local version commit " + pkgl.githubVersionCommit );
-
-      if (pkgl.githubVersionCommit !== pkgg[0].commit.sha) {
-        grunt.log.error("You must run the npm install command to upgrade your version to '"+ pkgg[0].name +"' and run after the command 'yo bridge-template' in this directory");
-        grunt.log.error();
-      } else {
-        grunt.log.ok("Your version is up to date");
-        grunt.log.ok();
-      }      
-      grunt.task.run('clean:version');
-
     }
     callback();
   }
@@ -290,12 +264,6 @@ module.exports = function(grunt) {
         options: {
           callback: shellUploadCallback
         }
-      },
-      get_github_version: {
-        command: 'curl -o _version/github_version.json --create-dirs https://api.github.com/repos/Leadformance/generator-bridge-template/tags ',
-        options: {
-          callback: shellVersionCallback
-        }        
       }
     },
     /* Native upload (no cURL) */
@@ -358,7 +326,7 @@ module.exports = function(grunt) {
           message: "YAY, template's been uploaded (slot #<%= config.templateSlot %>)"
         }
       }
-    }
+    }        
   });
 
   // These plugins provide necessary tasks.
@@ -444,11 +412,35 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('check_version', function() {
-    // Get the last github version
-    grunt.task.run('shell:get_github_version');
+  grunt.registerTask('check_version', function() { 
+    var done = this.async(); 
+    request.get({url:'https://api.github.com/repos/Leadformance/generator-bridge-template/tags',json: true,timeout: 5000,headers: {'User-Agent': 'request'}}, function (error, response, data) {
 
-  });
+      if (error !== null) {
+        grunt.log.error();
+        grunt.warn("Can't download the last github version of generator-bridge-template");
+      } else {
+
+        // Get the last released commit installed from the last "npm install" execution
+        grunt.log.writeln("Github version commit " + data[0].commit.sha + " (tag:"+data[0].name+")");    
+
+        // Get the last released commit installed from the last "yo brisdge-template" execution in this directory
+        var pkgl = grunt.file.readJSON('.bridge-apikey.json');
+        grunt.log.writeln("Local version commit " + pkgl.githubVersionCommit );
+
+        if (pkgl.githubVersionCommit !== data[0].commit.sha) {
+          grunt.log.error("You must run the npm install command to upgrade your version to '"+ data[0].name +"' and run after the command 'yo bridge-template' in this directory");
+          grunt.log.error();
+        } else {
+          grunt.log.ok("Your version is up to date");
+          grunt.log.ok();
+        }      
+
+      }      
+      done();
+    });
+  });  
+
 
   grunt.registerTask('server', [
     'watch'
