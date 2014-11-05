@@ -16,7 +16,7 @@
     "url": "git://github.com/Leadformance/generator-bridge-template.git"
   },
   "dependencies": {
-    "yeoman-generator": "~0.16.0",
+    "yeoman-generator": "~0.17.7",
     "request": "~2.34.0",
     "lodash": "~2.4.1"
   },
