@@ -54,19 +54,15 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     },
     {
       name: "Desktop starter template (Bootstrap 3) - OVERWRITE files in the current dir",
-      value: "http://tools.leadformance.com/templates/starterbootstrap3-template-latest.tar.gz"
-    },
-    {
-      name: "DEPRECATED - Desktop starter template (Bootstrap 2) - OVERWRITE files in the current dir",
-      value: "http://tools.leadformance.com/templates/starter-template-latest.tar.gz"
+      value: "http://tools.leadformance.com/templates/starterbootstrap3-template-latest.zip"
     },
     {
       name: "Mobile template - OVERWRITE files in the current dir",
-      value: "http://tools.leadformance.com/templates/mobile-template-latest.tar.gz"
+      value: "http://tools.leadformance.com/templates/mobile-template-latest.zip"
     },
     {
       name: "Facebook template - OVERWRITE files in the current dir",
-      value: "http://tools.leadformance.com/templates/facebook-template-latest.tar.gz"
+      value: "http://tools.leadformance.com/templates/facebook-template-latest.zip"
     }
   ];
 
