@@ -11,7 +11,7 @@
     "url": "<%= pkg.author.url %>"
  },
   "devDependencies": {
-    "grunt": "0.4.3",
+    "grunt": "~0.4.3",
     "grunt-autoprefixer": "~2.2.0",
     "grunt-contrib-jshint": "~0.8.0",
     "grunt-contrib-csslint": "~0.2.0",
