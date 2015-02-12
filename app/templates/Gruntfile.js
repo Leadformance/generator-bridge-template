@@ -1,14 +1,16 @@
+/*global module:false, require:false, console:false*/
+/*jshint -W106 */
 var request = require('request');
 
-/*global module:false*/
 module.exports = function (grunt) {
+    var nbUploadWarns = 0;
 
     // Helpers
     function shellCheckCallback(err, stdout, stderr, callback) {
         // API should output a string containing the template id after successful upload
-        if (stdout.indexOf('Status: 200') == -1) {
+        if (stdout.indexOf('Status: 200') === -1) {
             grunt.log.error();
-            grunt.warn("Can't upload template, check your .bridge-apikey.json");
+            grunt.warn('Can\'t upload template, check your .bridge-apikey.json');
         } else {
             console.log(stdout);
             grunt.log.ok();
@@ -18,8 +20,8 @@ module.exports = function (grunt) {
 
     function shellUploadCallback(err, stdout, stderr, callback) {
         // API should output a string containing the template id after successful upload
-        if (stdout.indexOf('{"id":') == -1) {
-            grunt.fatal("Can't upload template, check your .bridge-apikey.json");
+        if (stdout.indexOf('{"id":') === -1) {
+            grunt.fatal('Can\'t upload template, check your .bridge-apikey.json');
         } else {
             console.log(stdout);
             grunt.log.ok();
@@ -35,6 +37,7 @@ module.exports = function (grunt) {
         banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
         '<%= grunt.template.today("yyyy-mm-dd") %> */\n',
         dirs: {
+            app: 'src',
             js: 'javascripts',
             css: 'stylesheets',
             img: 'images',
@@ -49,30 +52,13 @@ module.exports = function (grunt) {
         /* Lint JS */
         jshint: {
             options: {
-                curly: true,
-                immed: true,
-                latedef: true,
-                newcap: true,
-                noarg: true,
-                sub: true,
-                undef: false,
-                unused: true,
-                boss: true,
-                eqnull: true,
-                browser: true,
-                globals: {
-                    jQuery: true,
-                    console: true,
-                    module: true,
-                    document: true
-                }
+                jshintrc: '.jshintrc'
             },
             gruntfile: {
                 src: 'Gruntfile.js'
             },
             all: {
-                // do not lint external resources (like bootstrap / jquery), too messy
-                src: ['<%= dirs.js %>/**/*.js', '!**/*bootstrap*.js', '!**/*jquery*.js']
+                src: ['<%= dirs.js %>/**/*.js', '!<%= dirs.js %>/vendors/**/*.js']
             }
         },
         /* Lint CSS */
@@ -149,6 +135,17 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.css %>/**/*.css']
+                    //'<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.temp %>/*.css']
+                }
+            },
+            // TODO delete css way and use only sass
+            sass: {
+                options: {
+                    banner: '<%= banner %>'
+                },
+                files: {
+                    //'<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.css %>/**/*.css']
+                    '<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.temp %>/*.css']
                 }
             }
         },
@@ -170,10 +167,10 @@ module.exports = function (grunt) {
         },
         /* Clean dirs */
         clean: {
-            temp: ["<%= dirs.temp %>"],
-            output: ["<%= dirs.output %>"],
-            build: ["<%= dirs.build %>"],
-            version: ["<%= dirs.version %>"]
+            temp: ['<%= dirs.temp %>'],
+            output: ['<%= dirs.output %>'],
+            build: ['<%= dirs.build %>'],
+            version: ['<%= dirs.version %>']
         },
         /* Copy other files to output directory */
         copy: {
@@ -324,28 +321,54 @@ module.exports = function (grunt) {
         notify_hooks: {
             options: {
                 enabled: true,
-                max_jshint_notifications: 5, // maximum number of notifications from jshint output
-                title: "Bridge Grunt"
+                max_jshint_notifications: 1, // maximum number of notifications from jshint output
+                title: 'Bridge Grunt'
             }
         },
         /* Notify specific messages */
         notify: {
             build: {
                 options: {
-                    title: "Bridge Grunt BUILD",
-                    message: "HOY, template zip'd!"
+                    title: 'Bridge Grunt BUILD',
+                    message: 'HOY, template zip\'d!'
                 }
             },
             upload: {
                 options: {
-                    title: "Bridge Grunt UPLOAD",
-                    message: "YAY, template's been uploaded (slot #<%= config.templateSlot %>)"
+                    title: 'Bridge Grunt UPLOAD',
+                    message: 'YAY, template\'s been uploaded (slot #<%= config.templateSlot %>)'
                 }
+            }
+        },
+        sass: {
+            dist: {
+                options: {
+                    style: 'expanded',
+                    lineNumber: true,
+                    sourcemap: 'none'
+                },
+                files: {
+                    '<%= dirs.temp %>/app.css': '<%= dirs.app %>/app.scss'
+                }
+            }
+        },
+        autoprefixer: {
+            options: ['last 2 versions', 'ie 8', 'ie 9'],
+            '<%= dirs.temp %>/app.css': ['<%= dirs.temp %>/app.css']
+        },
+        scsslint: {
+            allFiles: [
+                '<%= dirs.app %>/**/*.scss'
+            ],
+            options: {
+                config: '.scss-lint.yml',
+                colorizeOutput: true
             }
         }
     });
 
     // These plugins provide necessary tasks.
+    grunt.loadNpmTasks('grunt-autoprefixer');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-csslint');
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -356,7 +379,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-open');
+    grunt.loadNpmTasks('grunt-scss-lint');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-notify');
     grunt.loadNpmTasks('grunt-http-upload');
@@ -384,19 +409,25 @@ module.exports = function (grunt) {
 
     /* Dev: test */
     grunt.registerTask('check', [
-        'jshint',
+        //'jshint',
         'csslint'
     ]);
 
+    grunt.registerTask('preprocss', [
+        'scsslint',
+        'sass',
+        'autoprefixer'
+    ]);
 
     grunt.registerTask('build-app', [
         'check',
         'clean',
+        //'preprocss',
         'concat',
         'uglify',
-        'clean:temp',
-        'cssmin',
+        'cssmin:add_banner',
         'imagemin',
+        'clean:temp',
 
         // --- HACK
         // 'copy',
@@ -414,19 +445,18 @@ module.exports = function (grunt) {
         'open:build',
         'notify:build'
     ]);
-
     grunt.registerTask('upload', function () {
         nbUploadWarns = 0;
-        config = grunt.file.readJSON('.bridge-apikey.json');
+        var config = grunt.file.readJSON('.bridge-apikey.json');
         if (config.apiKey !== '') {
-            grunt.task.run('jshint',
+            grunt.task.run(
                 'build-app',
                 'http_upload_with_fallback',
                 'http_upload_nossl',
                 'clean:build',
                 'notify:upload');
         } else {
-            grunt.log.error("HEY, you can't use 'grunt upload' because the API key is missing. Use 'yo brige-template' to init one.");
+            grunt.log.error('HEY, you can\'t use "grunt upload" because the API key is missing. Use "yo brige-template" to init one.');
             return false;
         }
     });
@@ -442,21 +472,21 @@ module.exports = function (grunt) {
 
             if (error !== null) {
                 grunt.log.error();
-                grunt.warn("Can't download the last github version of generator-bridge-template");
+                grunt.warn('Can\'t download the last github version of generator-bridge-template');
             } else {
 
                 // Get the last released commit installed from the last "npm install" execution
-                grunt.log.writeln("Github version commit " + data[0].commit.sha + " (tag:" + data[0].name + ")");
+                grunt.log.writeln('Github version commit ' + data[0].commit.sha + ' (tag:' + data[0].name + ')');
 
                 // Get the last released commit installed from the last "yo brisdge-template" execution in this directory
                 var pkgl = grunt.file.readJSON('.bridge-apikey.json');
-                grunt.log.writeln("Local version commit " + pkgl.githubVersionCommit);
+                grunt.log.writeln('Local version commit ' + pkgl.githubVersionCommit);
 
                 if (pkgl.githubVersionCommit !== data[0].commit.sha) {
-                    grunt.log.error("You must run the npm install command to upgrade your version to '" + data[0].name + "' and run after the command 'yo bridge-template' in this directory");
+                    grunt.log.error('You must run the npm install command to upgrade your version to "' + data[0].name + '" and run after the command "yo bridge-template" in this directory');
                     grunt.log.error();
                 } else {
-                    grunt.log.ok("Your version is up to date");
+                    grunt.log.ok('Your version is up to date');
                     grunt.log.ok();
                 }
 
@@ -470,12 +500,13 @@ module.exports = function (grunt) {
         'watch'
     ]);
     grunt.registerTask('template', function () {
-        config = grunt.file.readJSON('.bridge-apikey.json');
-        grunt.log.write("You work on the template named '" + config.templateSlotName + "' (#" + config.templateSlot + ")");
+        var config = grunt.file.readJSON('.bridge-apikey.json');
+        grunt.log.write('You work on the template named "' + config.templateSlotName + '" (#' + config.templateSlot + ')');
     });
 
     // Default task.
     grunt.registerTask('default', 'check');
+
 
     // --- HACK
     grunt.registerTask('copy-without-hack', [
@@ -486,6 +517,27 @@ module.exports = function (grunt) {
 
     grunt.registerTask('wonderful-hack', [
         'copy:hack'
+    ]);
+
+    grunt.registerTask('upload-sass', [
+        'check',
+        'clean',
+        'preprocss',
+        'concat',
+        'uglify',
+        'cssmin:sass',
+        'imagemin',
+        'clean:temp',
+
+        'copy-without-hack',
+        'wonderful-hack',
+
+        'compress',
+        'clean:output',
+        'http_upload_with_fallback',
+        'http_upload_nossl',
+        'clean:build',
+        'notify:upload'
     ]);
     // HACK ---
 };

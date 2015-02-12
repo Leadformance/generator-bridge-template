@@ -275,6 +275,8 @@ BridgeTemplateGenerator.prototype.app = function app() {
     this.copy('package.json', 'package.json');
     this.copy('Gruntfile.js', 'Gruntfile.js');
     this.copy('gitignore', '.gitignore');
+    this.copy('.jshintrc', '.jshintrc');
+    this.copy('.scss-lint.yml', '.scss-lint.yml');
 };
 
 // generate config file based on prompt answers
