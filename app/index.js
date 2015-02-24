@@ -13,7 +13,7 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
     this.on('end', function () {
         this._checkVersion();
         this.installDependencies({
-            bower: false,
+            bower: true,
             npm: true,
             skipInstall: options['skip-install'],
             callback: function() {
