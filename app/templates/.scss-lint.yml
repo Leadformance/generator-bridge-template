@@ -45,6 +45,9 @@ linters:
   IdWithExtraneousSelector:
     enabled: true
 
+  ImportantRule:
+    enabled: true
+
   Indentation:
     enabled: true
     width: 4
@@ -59,11 +62,11 @@ linters:
 
   NameFormat:
     enabled: true
-    convention: hyphenated_lowercase # or 'BEM', or a regex pattern
+    convention: hyphenated_lowercase # TODO 'BEM'
 
   NestingDepth:
     enabled: true
-    max_depth: 4
+    max_depth: 10 #TODO reduce this to 4
 
   PlaceholderInExtend:
     enabled: true
@@ -76,9 +79,13 @@ linters:
     enabled: true
     extra_properties: []
 
+  QualifyingElement:
+    enabled: true
+    allow_element_with_attribute: true
+
   SelectorDepth:
     enabled: true
-    max_depth: 3
+    max_depth: 10 #TODO reduce this to 3
 
   Shorthand:
     enabled: true
@@ -121,3 +128,11 @@ linters:
 
   ZeroUnit:
     enabled: true
+
+  # TODO remove this
+  IdSelector:
+    enabled: false
+
+  SelectorFormat:
+    enabled: false
+  # ---------------
