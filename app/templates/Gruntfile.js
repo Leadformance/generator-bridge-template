@@ -29,24 +29,7 @@ module.exports = function (grunt) {
         callback();
     }
 
-    // --- HACK
-    var bowerCssFiles = [
-        'bower_components/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css',
-        'bower_components/magnific-popup/dist/magnific-popup.css',
-        'bower_components/select2/dist/css/select2.min.css',
-        'bower_components/Scroller/jquery.fs.scroller.min.css'
-    ];
-
-    var bowerJsFiles = [
-        'bower_components/bootstrap/dist/js/bootstrap.min.js',
-        'bower_components/magnific-popup/dist/jquery.magnific-popup.min.js',
-        'bower_components/select2/dist/js/select2.min.js',
-        'bower_components/Scroller/jquery.fs.scroller.min.js'
-    ];
-    // HACK ---
-
     // Project configuration.
-
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         config: grunt.file.readJSON('.bridge-apikey.json'),
@@ -87,8 +70,7 @@ module.exports = function (grunt) {
             },
             build: {
                 files: {
-                    '<%= dirs.temp %>/<%= dirs.js %>/combined.js': ['<%= dirs.app %>/<%= dirs.js %>/*.js'],
-                    '<%= dirs.temp %>/<%= dirs.js %>/vendors.js': bowerJsFiles
+                    '<%= dirs.temp %>/<%= dirs.js %>/combined.js': ['<%= dirs.app %>/<%= dirs.js %>/*.js']
                 }
             }
         },
@@ -112,8 +94,17 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.temp %>/*.css'],
-                    '<%= dirs.output %>/<%= dirs.css %>/vendors.min.css': bowerCssFiles
+                    '<%= dirs.output %>/<%= dirs.css %>/vendors.min.css': ['<%= dirs.temp %>/<%= dirs.css %>/vendors.css']
                 }
+            }
+        },
+        bower_concat: {
+            all: {
+                dest: '<%= dirs.temp %>/<%= dirs.js %>/vendors.js',
+                cssDest: '<%= dirs.temp %>/<%= dirs.css %>/vendors.css',
+                exclude: [
+                    'jquery'
+                ]
             }
         },
         /* Optimize images */
@@ -126,7 +117,7 @@ module.exports = function (grunt) {
                 },
                 files: [{
                     expand: true,
-                    cwd: '<%= dirs.img %>',
+                    cwd: '<%=dirs.app %>/<%= dirs.img %>',
                     src: '**/*.{png,jpg,jpeg,gif,PNG,JPG,JPEG,GIF}',
                     dest: '<%= dirs.output %>/<%= dirs.img %>'
                 }]
@@ -159,12 +150,11 @@ module.exports = function (grunt) {
                     dest: '<%= dirs.output %>/<%= dirs.fonts %>'
                 }]
             },
-
             images: {
                 files: [{
                     expand: true,
                     flatten: true,
-                    src: '<%= dirs.app %>/<%= dirs.img %>/**/*',
+                    src: '<%= dirs.app %>/<%= dirs.img %>/**/*.{webp,ico,svg,WEBP,ICO,SVG}',
                     dest: '<%= dirs.output %>/<%= dirs.img %>'
                 }]
             },
@@ -326,6 +316,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-notify');
     grunt.loadNpmTasks('grunt-http-upload');
+    grunt.loadNpmTasks('grunt-bower-concat');
 
     // This is required if you use any options.
     grunt.task.run('notify_hooks');
@@ -369,6 +360,7 @@ module.exports = function (grunt) {
         'clean',
         'preprocss',
         'concat',
+        'bower_concat',
         'uglify',
         'cssmin',
         'imagemin',
