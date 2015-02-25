@@ -45,9 +45,6 @@ linters:
   IdWithExtraneousSelector:
     enabled: true
 
-  ImportantRule:
-    enabled: true
-
   Indentation:
     enabled: true
     width: 4
@@ -134,5 +131,11 @@ linters:
     enabled: false
 
   SelectorFormat:
+    enabled: false
+
+  ImportantRule:
+    enabled: false
+
+  ColorVariable:
     enabled: false
   # ---------------
