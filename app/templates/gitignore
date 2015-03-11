@@ -8,3 +8,4 @@ Gruntfile.js
 package.json
 .jshintrc
 .scss-lint.yml
+bower_components

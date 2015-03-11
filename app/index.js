@@ -12,7 +12,15 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
     // install NPM dependencies at the end
     this.on('end', function () {
         this._checkVersion();
-        this.installDependencies({bower: false, npm: true, skipInstall: options['skip-install']});
+        this.installDependencies({
+            bower: true,
+            npm: true,
+            skipInstall: options['skip-install'],
+            callback: function() {
+                // install git hooks
+                this.spawnCommand('grunt', ['githooks'])
+            }.bind(this)
+        });
     });
 
     // read main package.json to get some
@@ -23,7 +31,7 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
         this.existingCfg = JSON.parse(this.readFileAsString(path.join(this.destinationRoot(), '.bridge-apikey.json')));
     } catch (e) {
         // default values if config file doesn't exist
-        this.existingCfg = '';
+        this.existingCfg = {};
     }
 
     this.githubVersionTag = '';

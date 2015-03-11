@@ -30,7 +30,6 @@ module.exports = function (grunt) {
     }
 
     // Project configuration.
-
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         config: grunt.file.readJSON('.bridge-apikey.json'),
@@ -38,8 +37,9 @@ module.exports = function (grunt) {
         '<%= grunt.template.today("yyyy-mm-dd") %> */\n',
         dirs: {
             app: 'src',
-            js: 'javascripts',
+            js: 'js',
             css: 'stylesheets',
+            fonts: 'fonts',
             img: 'images',
             output: '_output',
             build: '_build',
@@ -58,51 +58,7 @@ module.exports = function (grunt) {
                 src: 'Gruntfile.js'
             },
             all: {
-                src: ['<%= dirs.js %>/**/*.js', '!<%= dirs.js %>/vendors/**/*.js']
-            }
-        },
-        /* Lint CSS */
-        csslint: {
-            all: {
-                options: {
-                    /* This set of options is only made to catch potentially harmful errors. Writing beautiful CSS is still up to you. */
-                    'important': false,
-                    'adjoining-classes': false,
-                    'known-properties': false,
-                    'box-sizing': false,
-                    'box-model': false,
-                    'overqualified-elements': false,
-                    // 'display-property-grouping': false,
-                    // 'bulletproof-font-face': false,
-                    'compatible-vendor-prefixes': false,
-                    'regex-selectors': false,
-                    // 'errors': false,
-                    'duplicate-background-images': false,
-                    // 'duplicate-properties': false,
-                    'empty-rules': false,
-                    // 'selector-max-approaching': false,
-                    // 'gradients': false,
-                    // 'fallback-colors': false,
-                    'font-sizes': false,
-                    // 'font-faces': false,
-                    'floats': false,
-                    'star-property-hack': false,
-                    'outline-none': false,
-                    // 'import': false,
-                    'ids': false,
-                    // 'underscore-property-hack': false,
-                    // 'rules-count': false,
-                    'qualified-headings': false,
-                    // 'selector-max': false,
-                    // 'shorthand': false,
-                    'text-indent': false,
-                    'unique-headings': false,
-                    'universal-selector': false,
-                    'unqualified-attributes': false,
-                    // 'vendor-prefix': false,
-                    'zero-units': false
-                },
-                src: ['<%= dirs.css %>/**/*.css', '!**/*bootstrap*.css', '!**/*jquery*.css']
+                src: ['<%= dirs.app %>/<%= dirs.js %>/**/*.js']
             }
         },
         /* Concat JS */
@@ -113,8 +69,9 @@ module.exports = function (grunt) {
                 separator: ';'
             },
             build: {
-                src: ['<%= dirs.js %>/**/*.js'],
-                dest: '<%= dirs.temp %>/<%= dirs.js %>/combined.js'
+                files: {
+                    '<%= dirs.temp %>/<%= dirs.js %>/combined.js': ['<%= dirs.app %>/<%= dirs.js %>/*.js']
+                }
             }
         },
         /* Minify JS */
@@ -123,30 +80,31 @@ module.exports = function (grunt) {
                 banner: '<%= banner %>'
             },
             build: {
-                src: '<%= concat.build.dest %>',
-                dest: '<%= dirs.output %>/<%= dirs.js %>/combined.min.js'
+                files: {
+                    '<%= dirs.output %>/<%= dirs.js %>/combined.min.js': ['<%= dirs.temp %>/<%= dirs.js %>/combined.js'],
+                    '<%= dirs.output %>/<%= dirs.js %>/vendors.min.js': ['<%= dirs.temp %>/<%= dirs.js %>/vendors.js']
+                }
             }
         },
         /* Concat & Minify CSS */
         cssmin: {
-            add_banner: {
-                options: {
-                    banner: '<%= banner %>'
-                },
-                files: {
-                    '<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.css %>/**/*.css']
-                    //'<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.temp %>/*.css']
-                }
-            },
-            // TODO delete css way and use only sass
             sass: {
                 options: {
                     banner: '<%= banner %>'
                 },
                 files: {
-                    //'<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.css %>/**/*.css']
-                    '<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.temp %>/*.css']
+                    '<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.temp %>/*.css'],
+                    '<%= dirs.output %>/<%= dirs.css %>/vendors.min.css': ['<%= dirs.temp %>/<%= dirs.css %>/vendors.css']
                 }
+            }
+        },
+        bower_concat: {
+            all: {
+                dest: '<%= dirs.temp %>/<%= dirs.js %>/vendors.js',
+                cssDest: '<%= dirs.temp %>/<%= dirs.css %>/vendors.css',
+                exclude: [
+                    'jquery'
+                ]
             }
         },
         /* Optimize images */
@@ -159,7 +117,7 @@ module.exports = function (grunt) {
                 },
                 files: [{
                     expand: true,
-                    cwd: '<%= dirs.img %>',
+                    cwd: '<%=dirs.app %>/<%= dirs.img %>',
                     src: '**/*.{png,jpg,jpeg,gif,PNG,JPG,JPEG,GIF}',
                     dest: '<%= dirs.output %>/<%= dirs.img %>'
                 }]
@@ -174,37 +132,30 @@ module.exports = function (grunt) {
         },
         /* Copy other files to output directory */
         copy: {
-            build: {
+            frontOffice: {
                 files: [{
                     expand: true,
-                    // exclude (npm/grunt/build/js/css/images) files
-                    src: ['**',
-                        '!node_modules/**',
-                        '!.bridge-apikey.json',
-                        '!grunt-README.md',
-                        '!Gruntfile.js',
-                        '!package.json',
-                        '!<%= dirs.output %>/**',
-                        '!<%= dirs.js %>/**',
-                        '!<%= dirs.css %>/**',
-                        '!<%= dirs.img %>/**'],
+                    src: [
+                        'frontoffice/**/*',
+                        'pages.json'
+                    ],
                     dest: '<%= dirs.output %>'
                 }]
             },
-            other_images: {
+            fonts: {
                 files: [{
                     expand: true,
-                    cwd: '<%= dirs.img %>',
-                    src: '**/*.{webp,ico,svg,WEBP,ICO,SVG}',
-                    dest: '<%= dirs.output %>/<%= dirs.img %>'
+                    flatten: true,
+                    src: '<%= dirs.app %>/<%= dirs.fonts %>/**/*',
+                    dest: '<%= dirs.output %>/<%= dirs.fonts %>'
                 }]
             },
-            other_json: {
+            images: {
                 files: [{
                     expand: true,
-                    cwd: '<%= dirs.js %>',
-                    src: '**/*.json',
-                    dest: '<%= dirs.output %>/<%= dirs.js %>'
+                    flatten: true,
+                    src: '<%= dirs.app %>/<%= dirs.img %>/**/*.{webp,ico,svg,WEBP,ICO,SVG}',
+                    dest: '<%= dirs.output %>/<%= dirs.img %>'
                 }]
             },
             // --- HACK
@@ -212,7 +163,7 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     flatten: true,
-                    cwd: '<%= dirs.output %>/src',
+                    cwd: '<%= dirs.app %>',
                     src: '**/*.html',
                     dest: '<%= dirs.output %>',
                     rename: function(dest, src) {
@@ -224,27 +175,6 @@ module.exports = function (grunt) {
             }
             // HACK ---
         },
-        /* Rev assets */
-        /* Do not use rev + usemin for now, as of now, Bridge's CSS & JS are not compatible. Would need some CSS preprocessor to input image names in variables, and some time to clean JS... */
-        // rev: {
-        //   assets: {
-        //     files: [{
-        //       src: [
-        //         '<%= dirs.output %>/<%= dirs.js %>/**/*.js',
-        //         '<%= dirs.output %>/<%= dirs.css %>/**/*.css',
-        //         '<%= dirs.output %>/<%= dirs.img %>/**/*.{jpg,jpeg,gif,png}',
-        //         '<%= dirs.output %>/fonts/**/*.{eot,svg,ttf,woff}'
-        //       ]
-        //     }]
-        //   }
-        // },
-        // usemin: {
-        //     html: ['<%= dirs.output %>/**/*.html'],
-        //     css: ['<%= dirs.output %>/<%= dirs.css %>/**/*.css'],
-        //     options: {
-        //         dirs: ['<%= dirs.output %>']
-        //     }
-        // },
         /* Zip */
         compress: {
             build: {
@@ -311,10 +241,6 @@ module.exports = function (grunt) {
             js: {
                 files: ['<%= jshint.all.src %>'],
                 tasks: ['jshint:all']
-            },
-            css: {
-                files: ['<%= csslint.all.src %>'],
-                tasks: ['csslint:all']
             }
         },
         /* Notify Hooks */
@@ -364,13 +290,17 @@ module.exports = function (grunt) {
                 config: '.scss-lint.yml',
                 colorizeOutput: true
             }
+        },
+        githooks: {
+            all: {
+                'pre-commit': 'jshint scsslint'
+            }
         }
     });
 
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks('grunt-autoprefixer');
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-csslint');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
@@ -380,13 +310,13 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-sass');
+    grunt.loadNpmTasks('grunt-githooks');
     grunt.loadNpmTasks('grunt-open');
     grunt.loadNpmTasks('grunt-scss-lint');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-notify');
     grunt.loadNpmTasks('grunt-http-upload');
-    // grunt.loadNpmTasks('grunt-rev');
-    // grunt.loadNpmTasks('grunt-usemin');
+    grunt.loadNpmTasks('grunt-bower-concat');
 
     // This is required if you use any options.
     grunt.task.run('notify_hooks');
@@ -408,9 +338,9 @@ module.exports = function (grunt) {
     });
 
     /* Dev: test */
-    grunt.registerTask('check', [
-        //'jshint',
-        'csslint'
+    grunt.registerTask('lint', [
+        'jshint',
+        'scsslint'
     ]);
 
     grunt.registerTask('preprocss', [
@@ -419,19 +349,25 @@ module.exports = function (grunt) {
         'autoprefixer'
     ]);
 
+    grunt.registerTask('copy-build', [
+        'copy:frontOffice',
+        'copy:fonts',
+        'copy:images'
+    ]);
+
     grunt.registerTask('build-app', [
-        'check',
+        'jshint',
         'clean',
-        //'preprocss',
+        'preprocss',
         'concat',
+        'bower_concat',
         'uglify',
-        'cssmin:add_banner',
+        'cssmin',
         'imagemin',
         'clean:temp',
+        'copy-build',
 
         // --- HACK
-        // 'copy',
-        'copy-without-hack',
         'wonderful-hack',
         // HACK ---
 
@@ -495,49 +431,22 @@ module.exports = function (grunt) {
         });
     });
 
-
     grunt.registerTask('server', [
         'watch'
     ]);
+
     grunt.registerTask('template', function () {
         var config = grunt.file.readJSON('.bridge-apikey.json');
         grunt.log.write('You work on the template named "' + config.templateSlotName + '" (#' + config.templateSlot + ')');
     });
 
     // Default task.
-    grunt.registerTask('default', 'check');
+    grunt.registerTask('default', 'lint');
 
 
     // --- HACK
-    grunt.registerTask('copy-without-hack', [
-        'copy:build',
-        'copy:other_images',
-        'copy:other_json'
-    ]);
-
     grunt.registerTask('wonderful-hack', [
         'copy:hack'
-    ]);
-
-    grunt.registerTask('upload-sass', [
-        'check',
-        'clean',
-        'preprocss',
-        'concat',
-        'uglify',
-        'cssmin:sass',
-        'imagemin',
-        'clean:temp',
-
-        'copy-without-hack',
-        'wonderful-hack',
-
-        'compress',
-        'clean:output',
-        'http_upload_with_fallback',
-        'http_upload_nossl',
-        'clean:build',
-        'notify:upload'
     ]);
     // HACK ---
 };
