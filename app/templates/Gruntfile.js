@@ -284,7 +284,9 @@ module.exports = function (grunt) {
         },
         scsslint: {
             allFiles: [
-                '<%= dirs.app %>/**/*.scss'
+                '<%= dirs.app %>/**/*.scss',
+                '!<%= dirs.app %>/modules/headerClient/**/*.scss',
+                '!<%= dirs.app %>/modules/footerClient/**/*.scss'
             ],
             options: {
                 config: '.scss-lint.yml',
