@@ -104,7 +104,10 @@ module.exports = function (grunt) {
                 cssDest: '<%= dirs.temp %>/<%= dirs.css %>/vendors.css',
                 exclude: [
                     'jquery'
-                ]
+                ],
+                mainFiles: {
+                    'formstone': ['dist/js/core.js', 'dist/js/scrollbar.js', 'dist/css/scrollbar.css']
+                }
             }
         },
         /* Optimize images */
