@@ -288,8 +288,9 @@ module.exports = function (grunt) {
         scsslint: {
             allFiles: [
                 '<%= dirs.app %>/**/*.scss',
-                '!<%= dirs.app %>/modules/headerClient/**/*.scss',
-                '!<%= dirs.app %>/modules/footerClient/**/*.scss'
+                '!<%= dirs.app %>/modules/header/**/*.scss',
+                '!<%= dirs.app %>/modules/footer/**/*.scss',
+                '!<%= dirs.app %>/vendors/**/*.scss'
             ],
             options: {
                 config: '.scss-lint.yml',
