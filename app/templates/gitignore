@@ -1,11 +1,11 @@
 .bridge-apikey.json
 node_modules
-_output
-_build
-*.log
+npm-debug.log
 .sass-cache
 Gruntfile.js
 package.json
 .jshintrc
 .scss-lint.yml
-bower_components
+src/bower_components
+dist
+.tmp
