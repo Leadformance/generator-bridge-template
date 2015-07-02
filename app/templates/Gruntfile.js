@@ -175,8 +175,16 @@ module.exports = function (grunt) {
                             });
                     }
                 }]
-            }
+            },
             // HACK ---
+            other_json: {
+                files: [{
+                    expand: true,
+                    cwd: '<%= dirs.app %>/<%= dirs.js %>',
+                    src: '**/*.json',
+                    dest: '<%= dirs.output %>/<%= dirs.js %>'
+                }]
+            }
         },
         /* Zip */
         compress: {
@@ -358,7 +366,8 @@ module.exports = function (grunt) {
     grunt.registerTask('copy-build', [
         'copy:frontOffice',
         'copy:fonts',
-        'copy:images'
+        'copy:images',
+        'copy:other_json'
     ]);
 
     grunt.registerTask('build-app', [
