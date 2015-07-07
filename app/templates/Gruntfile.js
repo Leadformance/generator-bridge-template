@@ -1,118 +1,89 @@
-/*global module:false, require:false, console:false*/
-/*jshint -W106 */
-var request = require('request');
+'use strict';
 
 module.exports = function (grunt) {
     var nbUploadWarns = 0;
+    require('load-grunt-tasks')(grunt);
+    require('time-grunt')(grunt);
 
-    // Helpers
-    function shellCheckCallback(err, stdout, stderr, callback) {
-        // API should output a string containing the template id after successful upload
-        if (stdout.indexOf('Status: 200') === -1) {
-            grunt.log.error();
-            grunt.warn('Can\'t upload template, check your .bridge-apikey.json');
-        } else {
-            console.log(stdout);
-            grunt.log.ok();
-        }
-        callback();
-    }
-
-    function shellUploadCallback(err, stdout, stderr, callback) {
-        // API should output a string containing the template id after successful upload
-        if (stdout.indexOf('{"id":') === -1) {
-            grunt.fatal('Can\'t upload template, check your .bridge-apikey.json');
-        } else {
-            console.log(stdout);
-            grunt.log.ok();
-        }
-        callback();
-    }
-
-    // Project configuration.
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
         config: grunt.file.readJSON('.bridge-apikey.json'),
-        banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-        '<%= grunt.template.today("yyyy-mm-dd") %> */\n',
+
         dirs: {
-            app: 'src',
-            js: 'js',
-            css: 'stylesheets',
+            app: 'app',
+            assets: 'assets',
+            bower: 'bower_components',
+            components: 'components',
+            dist: 'dist',
             fonts: 'fonts',
             img: 'images',
-            output: '_output',
-            build: '_build',
-            temp: '<%= dirs.output %>/_temp',
-            version: '_version'
+            js: 'js',
+            src: 'src',
+            tmp: '.tmp'
         },
 
-        // Task configuration.
+        clean: {
+            tmp: ['<%= dirs.tmp %>'],
+            dist: ['<%= dirs.dist %>']
+        },
 
-        /* Lint JS */
-        jshint: {
-            options: {
-                jshintrc: '.jshintrc'
-            },
-            gruntfile: {
-                src: 'Gruntfile.js'
-            },
-            all: {
-                src: ['<%= dirs.app %>/<%= dirs.js %>/**/*.js']
-            }
-        },
-        /* Concat JS */
-        concat: {
-            options: {
-                banner: '<%= banner %>',
-                stripBanners: true,
-                separator: ';'
-            },
-            build: {
+        rev: {
+            dist: {
                 files: {
-                    '<%= dirs.temp %>/<%= dirs.js %>/combined.js': ['<%= dirs.app %>/<%= dirs.js %>/*.js']
+                    src: [
+                        '<%= dirs.dist %>/{,*/}*.js',
+                        '<%= dirs.dist %>/{,*/}*.css',
+                        '<%= dirs.dist %>/fonts/*'
+                    ]
                 }
             }
         },
-        /* Minify JS */
-        uglify: {
+
+        useminPrepare: {
+            html: '<%= dirs.src %>/index.html',
             options: {
-                banner: '<%= banner %>'
-            },
-            build: {
-                files: {
-                    '<%= dirs.output %>/<%= dirs.js %>/combined.min.js': ['<%= dirs.temp %>/<%= dirs.js %>/combined.js'],
-                    '<%= dirs.output %>/<%= dirs.js %>/vendors.min.js': ['<%= dirs.temp %>/<%= dirs.js %>/vendors.js']
+                dest: '<%= dirs.dist %>'
+            }
+        },
+
+        useminPrepareDev: {
+            html: '<%= dirs.src %>/index.html',
+            options: {
+                dest: '<%= dirs.dist %>',
+                flow: {
+                    html: {
+                        steps: {
+                            css: ['concat'],
+                            js: ['concat']
+                        },
+                        post: {}
+                    }
                 }
             }
         },
-        /* Concat & Minify CSS */
-        cssmin: {
-            sass: {
-                options: {
-                    banner: '<%= banner %>'
-                },
-                files: {
-                    '<%= dirs.output %>/<%= dirs.css %>/combined.min.css': ['<%= dirs.temp %>/*.css'],
-                    '<%= dirs.output %>/<%= dirs.css %>/vendors.min.css': ['<%= dirs.temp %>/<%= dirs.css %>/vendors.css']
-                }
-            }
-        },
-        bower_concat: {
-            all: {
-                dest: '<%= dirs.temp %>/<%= dirs.js %>/vendors.js',
-                cssDest: '<%= dirs.temp %>/<%= dirs.css %>/vendors.css',
-                exclude: [
-                    'jquery'
+
+        usemin: {
+            html: ['<%= dirs.dist %>/index.html'],
+            css: ['<%= dirs.dist %>/{,*/}*.css'],
+            js: ['<%= dirs.dist %>/{,*/}*.js'],
+            options: {
+                assetsDirs: [
+                    '<%= dirs.dist %>',
+                    '<%= dirs.dist %>/<%= dirs.img %>'
                 ],
-                mainFiles: {
-                    'formstone': ['dist/js/core.js', 'dist/js/scrollbar.js', 'dist/css/scrollbar.css']
+                patterns: {
+                    js: [
+                        [/(images\/.*?\.(?:gif|jpeg|jpg|png|webp|svg))/gm, 'Update the JS to reference our revved images']
+                    ],
+                    css: [
+                        [/(images\/.*?\.(?:gif|jpeg|jpg|png|webp|svg))/gm, 'Update the CSS to reference our revved images'],
+                        [/(fonts\/.*?\.(?:eot|ttf|svg|woff))/gm, 'Update the CSS to reference our revved fonts']
+                    ]
                 }
             }
         },
-        /* Optimize images */
+
         imagemin: {
-            build: {
+            dist: {
                 options: {
                     optimizationLevel: 3,
                     progressive: true,
@@ -120,55 +91,21 @@ module.exports = function (grunt) {
                 },
                 files: [{
                     expand: true,
-                    cwd: '<%=dirs.app %>/<%= dirs.img %>',
+                    cwd: '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>',
                     src: '**/*.{png,jpg,jpeg,gif,PNG,JPG,JPEG,GIF}',
-                    dest: '<%= dirs.output %>/<%= dirs.img %>'
+                    dest: '<%= dirs.dist %>/<%= dirs.img %>'
                 }]
             }
         },
-        /* Clean dirs */
-        clean: {
-            temp: ['<%= dirs.temp %>'],
-            output: ['<%= dirs.output %>'],
-            build: ['<%= dirs.build %>'],
-            version: ['<%= dirs.version %>']
-        },
-        /* Copy other files to output directory */
+
         copy: {
-            frontOffice: {
-                files: [{
-                    expand: true,
-                    src: [
-                        'frontoffice/**/*',
-                        'pages.json'
-                    ],
-                    dest: '<%= dirs.output %>'
-                }]
-            },
-            fonts: {
+            html: {
                 files: [{
                     expand: true,
                     flatten: true,
-                    src: '<%= dirs.app %>/<%= dirs.fonts %>/**/*',
-                    dest: '<%= dirs.output %>/<%= dirs.fonts %>'
-                }]
-            },
-            images: {
-                files: [{
-                    expand: true,
-                    flatten: true,
-                    src: '<%= dirs.app %>/<%= dirs.img %>/**/*.{webp,ico,svg,WEBP,ICO,SVG}',
-                    dest: '<%= dirs.output %>/<%= dirs.img %>'
-                }]
-            },
-            // --- HACK
-            hack: {
-                files: [{
-                    expand: true,
-                    flatten: true,
-                    cwd: '<%= dirs.app %>',
-                    src: '**/*.html',
-                    dest: '<%= dirs.output %>',
+                    cwd: '<%= dirs.src %>',
+                    src: ['*.html', '<%= dirs.app %>/**/*.html', '!<%= dirs.bower %>/**'],
+                    dest: '<%= dirs.dist %>',
                     rename: function(dest, src) {
                         return dest + '/' + src.replace(/[A-Z]/ig, function(match) {
                                 return match.toLowerCase();
@@ -176,36 +113,169 @@ module.exports = function (grunt) {
                     }
                 }]
             },
-            // HACK ---
-            other_json: {
+            fonts: {
                 files: [{
                     expand: true,
-                    cwd: '<%= dirs.app %>/<%= dirs.js %>',
-                    src: '**/*.json',
-                    dest: '<%= dirs.output %>/<%= dirs.js %>'
+                    flatten: true,
+                    src: '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.fonts %>/**/*',
+                    dest: '<%= dirs.dist %>/<%= dirs.fonts %>'
+                }]
+            },
+            images: {
+                files: [{
+                    expand: true,
+                    flatten: true,
+                    src: '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>/**/*.{webp,ico,svg,WEBP,ICO,SVG}',
+                    dest: '<%= dirs.dist %>/<%= dirs.img %>'
+                }]
+            },
+            frontOffice: {
+                files: [{
+                    expand: true,
+                    src: [
+                        'frontoffice/**/*',
+                        'pages.json'
+                    ],
+                    dest: '<%= dirs.dist %>'
+                }]
+            },
+            updateResourcesPath: {
+                src: '<%= dirs.dist %>/index.html',
+                dest: '<%= dirs.dist %>/index.html',
+                options: {
+                    process: function(content) {
+                        return content.replace(/script src="js/g, 'script src="{{ frontoffice.view_short_template_path }}/javascripts')
+                            .replace(/href="stylesheets/g, 'href="{{ frontoffice.view_short_template_path }}/stylesheets')
+                            .replace(/="bower_components/g, '="{{ frontoffice.view_short_template_path }}/bower_components');
+                    }
+                }
+            },
+            devJsCss: {
+                expand: true,
+                cwd: '<%= dirs.tmp %>/concat',
+                src: '**/*',
+                dest: '<%= dirs.dist %>'
+            },
+            devVendors: {//TODO remove all vendors from src
+                expand: true,
+                cwd: 'src_old/<%= dirs.js %>/vendors',
+                src: '**/*',
+                dest: '<%= dirs.dist %>/<%= dirs.js %>'
+            },
+            devImages: {
+                expand: true,
+                cwd:'<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>',
+                src: '**/*',
+                dest: '<%= dirs.dist %>/<%= dirs.img %>'
+            }
+        },
+
+        sass: {
+            dev: {
+                options: {
+                    outputStyle: 'expanded',
+                    sourceComments: true
+                },
+                files: {
+                    '<%= dirs.tmp %>/app.css': '<%= dirs.src %>/app.scss'
+                }
+            },
+            dist: {
+                options: {
+                    outputStyle: 'compressed'
+                },
+                files: {
+                    '<%= dirs.tmp %>/app.css': '<%= dirs.src %>/app.scss'
+                }
+            }
+        },
+
+        postcss: {
+            options: {
+                processors: [
+                    require('autoprefixer-core')({browsers: ['last 2 versions', 'ie 8', 'ie 9']})
+                ]
+            },
+            dist: {
+                src: '<%= dirs.tmp %>/app.css'
+            }
+        },
+
+        browserify: {
+            options: {
+                transform: [['babelify', { stage: 0 }]]
+            },
+            dev: {
+                options: {
+                    browserifyOptions: {
+                        debug: true
+                    }
+                },
+                files: [{
+                    expand: true,
+                    flatten: true,
+                    src: '<%= dirs.src %>/app.js',
+                    dest: '<%= dirs.tmp %>/<%= dirs.js %>'
+                }]
+            },
+            dist: {
+                files: [{
+                    expand: true,
+                    flatten: true,
+                    src: '<%= dirs.src %>/app.js',
+                    dest: '<%= dirs.tmp %>/<%= dirs.js %>'
                 }]
             }
         },
-        /* Zip */
+
+        jshint: {
+            options: {
+                jshintrc: '.jshintrc'
+            },
+            all: {
+                src: ['<%= dirs.src %>/*.js', '<%= dirs.src %>/<%= dirs.app %>/**/*.js']
+            }
+        },
+
+        scsslint: {
+            allFiles: [
+                '<%= dirs.src %>/*.scss',
+                '<%= dirs.src %>/<%= dirs.app %>/**/*.scss',
+                '<%= dirs.src %>/<%= dirs.components %>/**/*.scss',
+                '!<%= dirs.src %>/<%= dirs.components %>/_header.scss',
+                '!<%= dirs.src %>/<%= dirs.components %>/_footer.scss'
+            ],
+            options: {
+                config: '.scss-lint.yml',
+                colorizeOutput: true
+            }
+        },
+
+        wiredep: {
+            bower: {
+                src: '<%= dirs.src %>/index.html',
+                ignorePath: '<%= dirs.src %>/'
+            }
+        },
+
         compress: {
             build: {
                 options: {
-                    archive: '<%= dirs.build %>/_template.zip',
+                    archive: '<%= dirs.dist %>/_template.zip',
                     level: 9,
                     pretty: true
                 },
                 files: [
-                    {expand: true, cwd: '<%= dirs.output %>/', src: ['**'], dest: ''}
+                    {
+                        expand: true,
+                        cwd: '<%= dirs.dist %>/',
+                        src: ['**'],
+                        dest: ''
+                    }
                 ]
             }
         },
-        /* Open Finder/Explorer in the .zip folder */
-        open: {
-            build: {
-                path: '<%= dirs.build %>'
-            }
-        },
-        /* Upload with cURL */
+
         shell: {
             check: {
                 command: 'curl --head --insecure "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
@@ -214,20 +284,20 @@ module.exports = function (grunt) {
                 }
             },
             upload: {
-                command: 'curl -F "template=@<%= dirs.build %>/_template.zip" -F "_method=PUT" --insecure "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
+                command: 'curl -F "template=@<%= dirs.dist %>/_template.zip" -F "_method=PUT" --insecure "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
                 options: {
                     callback: shellUploadCallback
                 }
             }
         },
-        /* Native upload (no cURL) */
+
         http_upload: {
             template: {
                 options: {
                     url: '<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>',
                     method: 'PUT'
                 },
-                src: '<%= dirs.build %>/_template.zip',
+                src: '<%= dirs.dist %>/_template.zip',
                 dest: 'template'
             },
             nossl: {
@@ -236,232 +306,140 @@ module.exports = function (grunt) {
                     method: 'PUT',
                     rejectUnauthorized: false
                 },
-                src: '<%= dirs.build %>/_template.zip',
+                src: '<%= dirs.dist %>/_template.zip',
                 dest: 'template'
             }
-        },
-        /* Watch */
-        watch: {
-            options: {
-                livereload: true
-            },
-            gruntfile: {
-                files: '<%= jshint.gruntfile.src %>',
-                tasks: ['jshint:gruntfile']
-            },
-            js: {
-                files: ['<%= jshint.all.src %>'],
-                tasks: ['jshint:all']
-            }
-        },
-        /* Notify Hooks */
-        notify_hooks: {
-            options: {
-                enabled: true,
-                max_jshint_notifications: 1, // maximum number of notifications from jshint output
-                title: 'Bridge Grunt'
-            }
-        },
-        /* Notify specific messages */
-        notify: {
-            build: {
-                options: {
-                    title: 'Bridge Grunt BUILD',
-                    message: 'HOY, template zip\'d!'
-                }
-            },
-            upload: {
-                options: {
-                    title: 'Bridge Grunt UPLOAD',
-                    message: 'YAY, template\'s been uploaded (slot #<%= config.templateSlot %>)'
-                }
-            }
-        },
-        sass: {
-            dist: {
-                options: {
-                    style: 'expanded',
-                    lineNumber: true,
-                    sourcemap: 'none'
-                },
-                files: {
-                    '<%= dirs.temp %>/app.css': '<%= dirs.app %>/app.scss'
-                }
-            }
-        },
-        autoprefixer: {
-            options: ['last 2 versions', 'ie 8', 'ie 9'],
-            '<%= dirs.temp %>/app.css': ['<%= dirs.temp %>/app.css']
-        },
-        scsslint: {
-            allFiles: [
-                '<%= dirs.app %>/**/*.scss',
-                '!<%= dirs.app %>/modules/header/**/*.scss',
-                '!<%= dirs.app %>/modules/footer/**/*.scss',
-                '!<%= dirs.app %>/vendors/**/*.scss'
-            ],
-            options: {
-                config: '.scss-lint.yml',
-                colorizeOutput: true
-            }
-        },
-        githooks: {
-            all: {
-                'pre-commit': 'jshint scsslint'
-            }
         }
     });
 
-    // These plugins provide necessary tasks.
-    grunt.loadNpmTasks('grunt-autoprefixer');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-cssmin');
-    grunt.loadNpmTasks('grunt-contrib-imagemin');
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-compress');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-sass');
-    grunt.loadNpmTasks('grunt-githooks');
-    grunt.loadNpmTasks('grunt-open');
-    grunt.loadNpmTasks('grunt-scss-lint');
-    grunt.loadNpmTasks('grunt-shell');
-    grunt.loadNpmTasks('grunt-notify');
-    grunt.loadNpmTasks('grunt-http-upload');
-    grunt.loadNpmTasks('grunt-bower-concat');
-
-    // This is required if you use any options.
-    grunt.task.run('notify_hooks');
-
-    // Register tasks.
-
-    // Try upload and track the number of warns and errors before
-    grunt.registerTask('http_upload_with_fallback', function () {
-        nbUploadWarns = grunt.fail.warncount + grunt.fail.errorcount;
-        grunt.task.run('http_upload:template');
-    });
-
-    // Try upload:nossl if there is a warn or error after the upload
-    grunt.registerTask('http_upload_nossl', function () {
-        if ((grunt.fail.warncount + grunt.fail.errorcount) > nbUploadWarns) {
-            grunt.log.writeln('"http_upload:template" failed, try the "http_upload:nossl" mode');
-            grunt.task.run('http_upload:nossl');
-        }
-    });
-
-    /* Dev: test */
     grunt.registerTask('lint', [
         'jshint',
         'scsslint'
     ]);
 
-    grunt.registerTask('preprocss', [
-        'scsslint',
-        'sass',
-        'autoprefixer'
+    // No bower wiredep, compressed css, no js source map
+    grunt.registerTask('build-fast', [
+        'clean',
+        'sass:dist',
+        'postcss',
+        'browserify:dist',
+        'useminPrepareDev',
+        'concat',
+        'copy:html',
+        'copy:fonts',
+        'copy:frontOffice',
+        'copy:devJsCss',
+        'copy:devImages',
+        'usemin',
+        'copy:devVendors',//TODO remove all vendors from src
+        'copy:updateResourcesPath',
+        'compress'
     ]);
 
-    grunt.registerTask('copy-build', [
+    grunt.registerTask('build-dev', [
+        'clean',
+        'sass:dev',
+        'wiredep',
+        'browserify:dev',
+        'useminPrepareDev',
+        'postcss',
+        'concat',
+        'copy:html',
+        'copy:fonts',
         'copy:frontOffice',
+        'copy:devJsCss',
+        'copy:devImages',
+        'usemin',
+        'copy:devVendors',//TODO remove all vendors from src
+        'copy:updateResourcesPath',
+        'compress'
+    ]);
+
+    grunt.registerTask('build', [
+        'lint',
+        'clean',
+        'sass:dist',
+        'imagemin',
+        'wiredep',
+        'browserify:dist',
+        'useminPrepare',
+        'postcss',
+        'concat',
+        'cssmin',
+        'uglify',
+        'rev',
+        'copy:html',
         'copy:fonts',
         'copy:images',
-        'copy:other_json'
+        'copy:frontOffice',
+        'usemin',
+        'copy:devVendors',//TODO remove all vendors from src
+        'copy:updateResourcesPath',
+        'compress'
     ]);
 
-    grunt.registerTask('build-app', [
-        'jshint',
-        'clean',
-        'preprocss',
-        'concat',
-        'bower_concat',
-        'uglify',
-        'cssmin',
-        'imagemin',
-        'clean:temp',
-        'copy-build',
+    grunt.registerTask('template', function() {
+        grunt.log.write('You work on the template named "' + grunt.config.data.config.templateSlotName + '" (#' + grunt.config.data.config.templateSlot + ')');
+    });
 
-        // --- HACK
-        'wonderful-hack',
-        // HACK ---
+    grunt.registerTask('upload-dev', ['upload:dev']);
+    grunt.registerTask('upload-fast', ['upload:fast']);
 
-        'compress',
-        'clean:output'
-    ]);
-
-    /* Prod: build .zip */
-    grunt.registerTask('build', [
-        'build-app',
-        'open:build',
-        'notify:build'
-    ]);
-    grunt.registerTask('upload', function () {
+    grunt.registerTask('upload', function(dev) {
         nbUploadWarns = 0;
-        var config = grunt.file.readJSON('.bridge-apikey.json');
-        if (config.apiKey !== '') {
+        var build = dev ? 'build-' + dev : 'build';
+
+        if (grunt.config.data.config.apiKey !== '') {
             grunt.task.run(
-                'build-app',
+                build,
                 'http_upload_with_fallback',
                 'http_upload_nossl',
-                'clean:build',
-                'notify:upload');
+                'clean');
         } else {
             grunt.log.error('HEY, you can\'t use "grunt upload" because the API key is missing. Use "yo brige-template" to init one.');
             return false;
         }
     });
 
-    grunt.registerTask('check_version', function () {
-        var done = this.async();
-        request.get({
-            url: 'https://api.github.com/repos/Leadformance/generator-bridge-template/tags',
-            json: true,
-            timeout: 5000,
-            headers: {'User-Agent': 'request'}
-        }, function (error, response, data) {
-
-            if (error !== null) {
-                grunt.log.error();
-                grunt.warn('Can\'t download the last github version of generator-bridge-template');
-            } else {
-
-                // Get the last released commit installed from the last "npm install" execution
-                grunt.log.writeln('Github version commit ' + data[0].commit.sha + ' (tag:' + data[0].name + ')');
-
-                // Get the last released commit installed from the last "yo brisdge-template" execution in this directory
-                var pkgl = grunt.file.readJSON('.bridge-apikey.json');
-                grunt.log.writeln('Local version commit ' + pkgl.githubVersionCommit);
-
-                if (pkgl.githubVersionCommit !== data[0].commit.sha) {
-                    grunt.log.error('You must run the npm install command to upgrade your version to "' + data[0].name + '" and run after the command "yo bridge-template" in this directory');
-                    grunt.log.error();
-                } else {
-                    grunt.log.ok('Your version is up to date');
-                    grunt.log.ok();
-                }
-
-            }
-            done();
-        });
+    grunt.registerTask('http_upload_with_fallback', function() {
+        nbUploadWarns = grunt.fail.warncount + grunt.fail.errorcount;
+        grunt.task.run('http_upload:template');
     });
 
-    grunt.registerTask('server', [
-        'watch'
-    ]);
-
-    grunt.registerTask('template', function () {
-        var config = grunt.file.readJSON('.bridge-apikey.json');
-        grunt.log.write('You work on the template named "' + config.templateSlotName + '" (#' + config.templateSlot + ')');
+    // Try upload:nossl if there is a warn or error after the upload
+    grunt.registerTask('http_upload_nossl', function() {
+        if ((grunt.fail.warncount + grunt.fail.errorcount) > nbUploadWarns) {
+            grunt.log.writeln('"http_upload:template" failed, try the "http_upload:nossl" mode');
+            grunt.task.run('http_upload:nossl');
+        }
     });
 
-    // Default task.
-    grunt.registerTask('default', 'lint');
-
-
-    // --- HACK
-    grunt.registerTask('wonderful-hack', [
-        'copy:hack'
-    ]);
-    // HACK ---
+    grunt.registerTask('useminPrepareDev', function () {
+        var useminPrepareDevConfig = grunt.config('useminPrepareDev');
+        grunt.config.set('useminPrepare', useminPrepareDevConfig);
+        grunt.task.run('useminPrepare');
+    });
 };
+
+function shellCheckCallback(err, stdout, stderr, callback) {
+    // API should output a string containing the template id after successful upload
+    if (stdout.indexOf('Status: 200') === -1) {
+        grunt.log.error();
+        grunt.warn('Can\'t upload template, check your .bridge-apikey.json');
+    } else {
+        console.log(stdout);
+        grunt.log.ok();
+    }
+    callback();
+}
+
+function shellUploadCallback(err, stdout, stderr, callback) {
+    // API should output a string containing the template id after successful upload
+    if (stdout.indexOf('{"id":') === -1) {
+        grunt.fatal('Can\'t upload template, check your .bridge-apikey.json');
+    } else {
+        console.log(stdout);
+        grunt.log.ok();
+    }
+    callback();
+}
