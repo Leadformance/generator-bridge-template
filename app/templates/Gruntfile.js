@@ -158,7 +158,7 @@ module.exports = function (grunt) {
             },
             devVendors: {//TODO remove all vendors from src
                 expand: true,
-                cwd: 'src_old/<%= dirs.js %>/vendors',
+                cwd: 'src/vendors',
                 src: '**/*',
                 dest: '<%= dirs.dist %>/<%= dirs.js %>'
             },
@@ -241,6 +241,7 @@ module.exports = function (grunt) {
             allFiles: [
                 '<%= dirs.src %>/*.scss',
                 '<%= dirs.src %>/<%= dirs.app %>/**/*.scss',
+                '!<%= dirs.src %>/<%= dirs.app %>/_icons.scss',
                 '<%= dirs.src %>/<%= dirs.components %>/**/*.scss',
                 '!<%= dirs.src %>/<%= dirs.components %>/_header.scss',
                 '!<%= dirs.src %>/<%= dirs.components %>/_footer.scss'
