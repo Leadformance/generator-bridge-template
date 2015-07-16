@@ -1,20 +1,22 @@
 {
   "name": "grunt-lf-bridge-template",
   "private": true,
-  "version": "3.0.0",
+  "version": "<%= pkg.version %>",
   "description": "Grunt tasks for Bridge template development",
-  "homepage": "https://github.com/Leadformance/generator-bridge-template",
-  "bugs": "https://github.com/Leadformance/generator-bridge-template/issues",
+  "homepage": "<%= pkg.homepage %>",
+  "bugs": "<%= pkg.homepage %>/issues",
   "author": {
-    "name": "Damien Pellier",
-    "email": "",
-    "url": "https://github.com/dpellier"
+    "name": "<%= pkg.author.name %>",
+    "email": "<%= pkg.author.email %>",
+    "url": "<%= pkg.author.url %>"
   },
   "devDependencies": {
     "autoprefixer-core": "~5.2.0",
     "babelify": "^6.1.2",
+    "bower": "^1.4.1",
     "grunt": "~0.4.3",
     "grunt-browserify": "^3.8.0",
+    "grunt-cli": "^0.1.13",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-compress": "^0.13.0",
     "grunt-contrib-concat": "^0.5.1",

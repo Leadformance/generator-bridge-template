@@ -26,7 +26,6 @@
   "browser": true,
   "jquery": true,
   "globals": {
-    "app": true,
     "_gaq": true,
     "_gat": true,
     "moment": true
