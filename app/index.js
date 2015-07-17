@@ -15,11 +15,7 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
         this.installDependencies({
             bower: true,
             npm: true,
-            skipInstall: options['skip-install'],
-            callback: function() {
-                // install git hooks
-                this.spawnCommand('grunt', ['githooks'])
-            }.bind(this)
+            skipInstall: options['skip-install']
         });
     });
 
