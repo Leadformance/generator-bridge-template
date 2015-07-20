@@ -1,9 +1,17 @@
 'use strict';
+
+var fs = require('fs');
 var util = require('util');
 var path = require('path');
 var yeoman = require('yeoman-generator');
 var request = require('request');
 var _ = require('lodash');
+
+var versions = {
+    v1: 'css',
+    v2: 'sass',
+    v3: 'es6'
+};
 
 // init generator
 var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(args, options, config) {
@@ -13,13 +21,9 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
     this.on('end', function () {
         this._checkVersion();
         this.installDependencies({
-            bower: true,
             npm: true,
-            skipInstall: options['skip-install'],
-            callback: function() {
-                // install git hooks
-                this.spawnCommand('grunt', ['githooks'])
-            }.bind(this)
+            bower: true,
+            skipInstall: options['skip-install']
         });
     });
 
@@ -40,12 +44,6 @@ var BridgeTemplateGenerator = module.exports = function BridgeTemplateGenerator(
 
 util.inherits(BridgeTemplateGenerator, yeoman.generators.Base);
 
-var templateUrls = {
-    desktop: 'http://tools.leadformance.com/templates/starter-template-latest.zip',
-    mobile: 'http://tools.leadformance.com/templates/mobile-template-latest.zip',
-    facebook: 'http://tools.leadformance.com/templates/facebook-template-latest.zip'
-};
-
 // main contents
 BridgeTemplateGenerator.prototype.askFor = function askFor() {
     var cb = this.async();
@@ -55,30 +53,9 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
 
     // have Yeoman greet the user.
     console.log(this.yeoman);
-    this.log.info('I will download the latest Bridge starter template, and set-up Grunt tasks for testing and uploading template.');
-    this.log.info('You will need an API key ("write_template") and a template slot if you want to upload your template with `grunt upload`.');
-    this.log.info('(v' + this.pkg.version + ')\n');
-
-    // download path for starter templates
-    var templateTypes = [
-        // value 'none' will not download anything
-        {
-            name: "No thanks, I already have an existing template. I just want the Grunt tasks.",
-            value: "none"
-        },
-        {
-            name: "Desktop starter template (Bootstrap 3) - OVERWRITE files in the current dir",
-            value: templateUrls.desktop
-        },
-        {
-            name: "Mobile template - OVERWRITE files in the current dir",
-            value: templateUrls.mobile
-        },
-        {
-            name: "Facebook template - OVERWRITE files in the current dir",
-            value: templateUrls.facebook
-        }
-    ];
+    this.log.info('I will set-up all the needed resources for testing and uploading template.');
+    this.log.info('You will need an API key ("write_template") and a template slot if you want to be able to upload your template with `grunt upload`.');
+    this.log.info('if you have any questions regarding this generator, feel free to contact us at contact@leadformance.com');
 
     // Bridge API URLs (for config file)
     var serverUrls = [
@@ -106,14 +83,6 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
 
     // define prompts
     var prompts = [
-        {
-            // chose a default template to start with
-            type: 'list',
-            name: 'templateType',
-            message: 'Do you want to automatically scaffold a generic, starter template (will be available in current directory)?',
-            default: 0,
-            choices: templateTypes
-        },
         {
             // API key - mandatory
             type: 'input',
@@ -171,7 +140,6 @@ BridgeTemplateGenerator.prototype._getGithubVersion = function _getGithubVersion
     }, function (error, response, data) {
         if (!error && response.statusCode == 200) {
             if (data !== null || data !== undefined) {
-                //callback(data[0].name, data[0].commit.sha);
                 this.githubVersionTag = data[0].name;
                 this.githubVersionCommit = data[0].commit.sha;
             }
@@ -280,17 +248,22 @@ BridgeTemplateGenerator.prototype._getApiDetails = function _getApiDetails(callb
 
 // copy main tasks files
 BridgeTemplateGenerator.prototype.app = function app() {
-    this.copy('package.json', 'package.json');
-    this.copy('Gruntfile.js', 'Gruntfile.js');
-    this.copy('gitignore', '.gitignore');
-    this.copy('.jshintrc', '.jshintrc');
-    this.copy('.scss-lint.yml', '.scss-lint.yml');
+    this._versionPath = getGeneratorVersion();
+
+    this.copy(path.join(this._versionPath, 'package.json'), 'package.json');
+    this.copy(path.join(this._versionPath, 'Gruntfile.js'), 'Gruntfile.js');
+    this.copy(path.join(this._versionPath, 'gitignore'), '.gitignore');
+
+    if (!_.isEqual(this._versionPath, versions.v1)) {
+        this.copy(path.join(this._versionPath, '.jshintrc'), '.jshintrc');
+        this.copy(path.join(this._versionPath, '.scss-lint.yml'), '.scss-lint.yml');
+    }
 };
 
 // generate config file based on prompt answers
 BridgeTemplateGenerator.prototype.apikey = function apikey() {
     this._sleep(5000);
-    this.template('_bridge-apikey.json', '.bridge-apikey.json');
+    this.template(path.join(this._versionPath, '_bridge-apikey.json'), '.bridge-apikey.json');
 };
 
 // create a wait loop
@@ -310,22 +283,44 @@ BridgeTemplateGenerator.prototype._checkVersion = function _checkVersion() {
                 this.log.info('Your version is up to date');
             }
         }
-
     }
 };
 
-// fetch starter templates remotely
-BridgeTemplateGenerator.prototype.fetchTemplate = function fetchTemplate() {
-    // if user chose a template to download (not 'false')
-    if (this.templateType !== "none") {
-        var self = this;
-        // download tar.gz'd template in cwd
-        this.tarball(this.templateType, this.destinationRoot(), function (err) {
-            if (err) {
-                self.log.error('Cannot download template from remote. Check your internet connection and try again.');
-                throw err;
-            }
-            self.log.create("Starter template files created in current directory, now move on!");
-        });
+function getGeneratorVersion() {
+    if (findFiles('.', /\.scss$/).length) {
+        // if there is a jsLiquid file it's the first Sass version
+        if (findFiles('.', /jsliquid\.html$/).length) {
+            return versions.v2;
+        }
+        // elsewhere it's the new ES6
+        return versions.v3;
     }
-};
+    // if there is no scss files, it's the old grunt
+    else {
+        return versions.v1;
+    }
+}
+
+function findFiles(startPath, filter) {
+    var results= [];
+
+    if (!fs.existsSync(startPath)){
+        return;
+    }
+
+    var files = fs.readdirSync(startPath);
+
+    for(var i = 0; i < files.length; i++) {
+        var filename = path.join(startPath, files[i]);
+        var stat = fs.lstatSync(filename);
+
+        if (stat.isDirectory()){
+            results = results.concat(findFiles(filename, filter));
+        }
+        else if (filter.test(filename)) {
+            results.push(filename);
+        }
+    }
+
+    return results;
+}
