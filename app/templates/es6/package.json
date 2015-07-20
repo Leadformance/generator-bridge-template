@@ -1,7 +1,7 @@
 {
   "name": "grunt-lf-bridge-template",
   "private": true,
-  "version": "<%= pkg.version %>",
+  "version": "3.0.0",
   "description": "Grunt tasks for Bridge template development",
   "homepage": "<%= pkg.homepage %>",
   "bugs": "<%= pkg.homepage %>/issues",
