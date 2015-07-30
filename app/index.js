@@ -60,10 +60,6 @@ BridgeTemplateGenerator.prototype.askFor = function askFor() {
     // Bridge API URLs (for config file)
     var serverUrls = [
         {
-            name: "Integrator (.i)",
-            value: "https://api.i.leadformance.com"
-        },
-        {
             name: "Internal QA (.q)",
             value: "https://api.q.leadformance.com"
         },
