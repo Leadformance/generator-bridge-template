@@ -2,6 +2,8 @@ var request = require('request');
 
 /*global module:false*/
 module.exports = function(grunt) {
+    var config = grunt.file.readJSON('.bridge-apikey.json');
+    var snippetMapping = {};
 
     // Helpers
     function shellCheckCallback(err, stdout, stderr, callback) {
@@ -288,20 +290,11 @@ module.exports = function(grunt) {
         },
         /* Watch */
         watch: {
-            options: {
-                livereload: true
-            },
-            gruntfile: {
-                files: '<%= jshint.gruntfile.src %>',
-                tasks: ['jshint:gruntfile']
-            },
-            js: {
-                files: ['<%= jshint.all.src %>'],
-                tasks: ['jshint:all']
-            },
-            css: {
-                files: ['<%= csslint.all.src %>'],
-                tasks: ['csslint:all']
+            snippets: {
+                files: '*.html',
+                options: {
+                    spawn: false
+                }
             }
         },
         /* Notify Hooks */
@@ -441,10 +434,6 @@ module.exports = function(grunt) {
         });
     });
 
-
-    grunt.registerTask('server', [
-        'watch'
-    ]);
     grunt.registerTask('template', function() {
         config = grunt.file.readJSON('.bridge-apikey.json');
         grunt.log.write("You work on the template named '" + config.templateSlotName + "' (#" + config.templateSlot + ")");
@@ -453,4 +442,60 @@ module.exports = function(grunt) {
     // Default task.
     grunt.registerTask('default', 'check');
 
+    // --- Live Reload
+    grunt.registerTask('updateSnippet', function(path) {
+        var done = this.async();
+
+        var snippetName = new RegExp('([_a-zA-Z]*)\.html$', 'g').exec(path)[1];
+        var snippetId = snippetMapping[snippetName];
+
+        if (isNaN(snippetId)) {
+            grunt.log.warn('Update failed for file: ' + path);
+            done();
+        } else {
+            var req = config.serverUrl + '/templates/' + config.templateSlot + '/snippets/' + snippetId + '?oauth_token=' + config.apiKey;
+            grunt.log.write('Update: ' + req);
+
+            request.put({
+                url: req,
+                json: true,
+                body: {
+                    snippet: {
+                        content: grunt.file.read(path)
+                    }
+                }
+            }, function() {
+                done();
+            });
+        }
+    });
+
+    grunt.event.on('watch', function(action, filepath) {
+        grunt.task.run('updateSnippet:' + filepath);
+    });
+
+    grunt.registerTask('serve', function() {
+        snippetMapping = {};
+
+        var done = this.async();
+
+        request.get({
+            url: config.serverUrl + '/templates/' + config.templateSlot + '?oauth_token=' + config.apiKey,
+            json: true
+        }, function(err, response, data) {
+            data.drops.forEach(function(snippet) {
+                snippetMapping[snippet.name] = snippet.id;
+            });
+
+            data.layouts.forEach(function(snippet) {
+                snippetMapping[snippet.name] = snippet.id;
+            });
+
+            grunt.task.run('watch:snippets');
+
+            done();
+        });
+    });
+
+    // Live Reload ---
 };
