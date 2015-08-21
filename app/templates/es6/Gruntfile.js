@@ -1,5 +1,8 @@
 'use strict';
 
+var fs = require('fs');
+var path = require('path');
+
 module.exports = function (grunt) {
     var nbUploadWarns = 0;
     require('load-grunt-tasks')(grunt);
@@ -11,6 +14,7 @@ module.exports = function (grunt) {
         dirs: {
             app: 'app',
             assets: 'assets',
+            bridge: 'bower_components/bridge-template-assets',
             bower: 'bower_components',
             components: 'components',
             dist: 'dist',
@@ -23,7 +27,8 @@ module.exports = function (grunt) {
 
         clean: {
             tmp: ['<%= dirs.tmp %>'],
-            dist: ['<%= dirs.dist %>']
+            dist: ['<%= dirs.dist %>'],
+            imageBak: ['<%= dirs.dist %>/<%= dirs.img %>/**/*.bak']
         },
 
         rev: {
@@ -82,29 +87,17 @@ module.exports = function (grunt) {
             }
         },
 
-        imagemin: {
-            dist: {
-                options: {
-                    optimizationLevel: 3,
-                    progressive: true,
-                    cache: false
-                },
-                files: [{
-                    expand: true,
-                    cwd: '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>',
-                    src: '**/*.{png,jpg,jpeg,gif,PNG,JPG,JPEG,GIF}',
-                    dest: '<%= dirs.dist %>/<%= dirs.img %>'
-                }]
-            }
-        },
-
         copy: {
             html: {
                 files: [{
                     expand: true,
                     flatten: true,
                     cwd: '<%= dirs.src %>',
-                    src: ['*.html', '<%= dirs.app %>/**/*.html', '!<%= dirs.bower %>/**'],
+                    src: [
+                        '*.html',
+                        '<%= dirs.app %>/**/*.html',
+                        '!<%= dirs.bower %>/**'
+                    ],
                     dest: '<%= dirs.dist %>',
                     rename: function(dest, src) {
                         return dest + '/' + src.replace(/[A-Z]/ig, function(match) {
@@ -117,7 +110,10 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     flatten: true,
-                    src: '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.fonts %>/**/*',
+                    src: [
+                        '<%= dirs.src %>/<%= dirs.bridge %>/<%= dirs.fonts %>/**/*',
+                        '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.fonts %>/**/*'
+                    ],
                     dest: '<%= dirs.dist %>/<%= dirs.fonts %>'
                 }]
             },
@@ -125,7 +121,10 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     flatten: true,
-                    src: '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>/**/*.{webp,ico,svg,WEBP,ICO,SVG}',
+                    src: [
+                        '<%= dirs.src %>/<%= dirs.bridge %>/<%= dirs.img %>/**/*.{webp,ico,svg,WEBP,ICO,SVG}',
+                        '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>/**/*.{webp,ico,svg,WEBP,ICO,SVG}'
+                    ],
                     dest: '<%= dirs.dist %>/<%= dirs.img %>'
                 }]
             },
@@ -156,17 +155,21 @@ module.exports = function (grunt) {
                 src: '**/*',
                 dest: '<%= dirs.dist %>'
             },
-            devVendors: {//TODO remove all vendors from src
-                expand: true,
-                cwd: 'src/vendors',
-                src: '**/*',
-                dest: '<%= dirs.dist %>/<%= dirs.js %>'
-            },
             devImages: {
                 expand: true,
-                cwd:'<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>',
-                src: '**/*',
-                dest: '<%= dirs.dist %>/<%= dirs.img %>'
+                cwd: '<%= dirs.src %>',
+                src: [
+                    '<%= dirs.bridge %>/<%= dirs.img %>/**/*',
+                    '<%= dirs.assets %>/<%= dirs.img %>/**/*'
+                ],
+                dest: '<%= dirs.dist %>/<%= dirs.img %>',
+                rename: function(dest, src) {
+                    var dirs = grunt.config('dirs');
+                    var bridgePath = dirs.bridge + '/' + dirs.img;
+                    var assetsPath = dirs.assets + '/' + dirs.img;
+
+                    return path.join(dest, src.replace(bridgePath, '').replace(assetsPath, ''));
+                }
             }
         },
 
@@ -332,7 +335,6 @@ module.exports = function (grunt) {
         'copy:devJsCss',
         'copy:devImages',
         'usemin',
-        'copy:devVendors',//TODO remove all vendors from src
         'copy:updateResourcesPath',
         'compress'
     ]);
@@ -351,7 +353,6 @@ module.exports = function (grunt) {
         'copy:devJsCss',
         'copy:devImages',
         'usemin',
-        'copy:devVendors',//TODO remove all vendors from src
         'copy:updateResourcesPath',
         'compress'
     ]);
@@ -360,7 +361,7 @@ module.exports = function (grunt) {
         'lint',
         'clean',
         'sass:dist',
-        'imagemin',
+        'imageminCustom',
         'wiredep',
         'browserify:dist',
         'useminPrepare',
@@ -374,7 +375,6 @@ module.exports = function (grunt) {
         'copy:images',
         'copy:frontOffice',
         'usemin',
-        'copy:devVendors',//TODO remove all vendors from src
         'copy:updateResourcesPath',
         'compress'
     ]);
@@ -415,10 +415,61 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('useminPrepareDev', function () {
+    grunt.registerTask('useminPrepareDev', function() {
         var useminPrepareDevConfig = grunt.config('useminPrepareDev');
         grunt.config.set('useminPrepare', useminPrepareDevConfig);
         grunt.task.run('useminPrepare');
+    });
+
+    grunt.registerTask('imageminCustom', function() {
+        var defaultImageToExclude = [];
+        var imageRegexp = '**/*.{png,jpg,jpeg,gif,PNG,JPG,JPEG,GIF}';
+
+        var dirs = grunt.config('dirs');
+        var defaultDir = path.join(dirs.src, dirs.bridge, dirs.img);
+        var assetsDir = path.join(dirs.src, dirs.assets, dirs.img);
+
+        // Get all the default images
+        var defaultImages = listFiles(defaultDir);
+
+        defaultImages.forEach(function(image) {
+            var shortImagePath = image.replace(defaultDir, '');
+
+            // If we can open the file on the app assets directory, we skip the default one
+            try {
+                fs.openSync(path.join(assetsDir, shortImagePath), 'r');
+                defaultImageToExclude.push(image);
+            } catch(err) {}
+        });
+
+        var config = {
+            dist: {
+                options: {
+                    optimizationLevel: 3,
+                    progressive: true,
+                    cache: false
+                },
+                files: [
+                    {
+                        expand: true,
+                        cwd: '<%= dirs.src %>/<%= dirs.assets %>/<%= dirs.img %>',
+                        src: imageRegexp,
+                        dest: '<%= dirs.dist %>/<%= dirs.img %>'
+                    },
+                    {
+                        expand: true,
+                        cwd: '<%= dirs.src %>/<%= dirs.bridge %>/<%= dirs.img %>',
+                        src: imageRegexp,
+                        dest: '<%= dirs.dist %>/<%= dirs.img %>',
+                        exclude: defaultImageToExclude
+                    }
+                ]
+            }
+        };
+
+        grunt.config.set('imagemin', config);
+        grunt.task.run('imagemin');
+        grunt.task.run('clean:imageBak');
     });
 };
 
@@ -443,4 +494,18 @@ function shellUploadCallback(err, stdout, stderr, callback) {
         grunt.log.ok();
     }
     callback();
+}
+
+function listFiles(dir, filelist) {
+    var files = fs.readdirSync(dir);
+    filelist = filelist || [];
+
+    files.forEach(function(file) {
+        if (fs.statSync(dir + '/' + file).isDirectory()) {
+            filelist = listFiles(dir + '/' + file, filelist);
+        } else {
+            filelist.push(dir + '/' + file);
+        }
+    });
+    return filelist;
 }
