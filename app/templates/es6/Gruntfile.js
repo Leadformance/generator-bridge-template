@@ -316,6 +316,8 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.registerTask('default', 'lint');
+
     grunt.registerTask('lint', [
         'jshint',
         'scsslint'
