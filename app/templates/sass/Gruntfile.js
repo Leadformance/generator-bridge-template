@@ -466,7 +466,7 @@ module.exports = function (grunt) {
     grunt.registerTask('updateSnippet', function(path) {
         var done = this.async();
 
-        var snippetName = new RegExp('([a-zA-Z]*)\.html$', 'g').exec(path)[1].toLowerCase();
+        var snippetName = new RegExp('([a-zA-Z]*).html$', 'g').exec(path)[1].toLowerCase();
         var snippetId = snippetMapping[snippetName];
 
         if (isNaN(snippetId)) {
