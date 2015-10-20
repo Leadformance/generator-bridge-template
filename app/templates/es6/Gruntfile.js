@@ -196,7 +196,7 @@ module.exports = function (grunt) {
         postcss: {
             options: {
                 processors: [
-                    require('autoprefixer-core')({browsers: ['last 2 versions', 'ie 8', 'ie 9']})
+                    require('autoprefixer')({browsers: ['last 2 versions', 'ie 8', 'ie 9']})
                 ]
             },
             dist: {
@@ -440,7 +440,7 @@ module.exports = function (grunt) {
             // If we can open the file on the app assets directory, we skip the default one
             try {
                 fs.openSync(path.join(assetsDir, shortImagePath), 'r');
-                defaultImageToExclude.push(image);
+                defaultImageToExclude.push('!' + image.replace(defaultDir + '/', ''));
             } catch(err) {}
         });
 
@@ -461,9 +461,8 @@ module.exports = function (grunt) {
                     {
                         expand: true,
                         cwd: '<%= dirs.src %>/<%= dirs.bridge %>/<%= dirs.img %>',
-                        src: imageRegexp,
-                        dest: '<%= dirs.dist %>/<%= dirs.img %>',
-                        exclude: defaultImageToExclude
+                        src: [imageRegexp].concat(defaultImageToExclude),
+                        dest: '<%= dirs.dist %>/<%= dirs.img %>'
                     }
                 ]
             }
