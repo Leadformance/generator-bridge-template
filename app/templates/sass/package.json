@@ -10,7 +10,11 @@
     "email": "<%= pkg.author.email %>",
     "url": "<%= pkg.author.url %>"
   },
+  "scripts": {
+    "postinstall": "bower install"
+  },
   "devDependencies": {
+    "bower": "^1.4.1",
     "grunt": "~0.4.3",
     "grunt-autoprefixer": "~2.2.0",
     "grunt-contrib-jshint": "~0.8.0",
