@@ -11,7 +11,7 @@
     "url": "<%= pkg.author.url %>"
   },
   "scripts": {
-    "postinstall": "bower install"
+    "postinstall": "bower install && cd node_modules/grunt-contrib-imagemin/node_modules/imagemin && rm -rf node_modules/vinyl-fs && npm i vinyl-fs@2.2.x"
   },
   "devDependencies": {
     "autoprefixer": "^6.0.3",
