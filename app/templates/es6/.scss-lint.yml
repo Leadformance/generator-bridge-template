@@ -25,7 +25,7 @@ linters:
     ignore_single_line_blocks: true
 
   EmptyRule:
-    enabled: true
+    enabled: false
 
   FinalNewline:
     enabled: true
