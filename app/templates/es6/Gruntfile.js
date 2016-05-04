@@ -292,6 +292,9 @@ module.exports = function (grunt) {
                 options: {
                     callback: shellUploadCallback
                 }
+            },
+            bowerUpdate: {
+                command: 'bower update',
             }
         },
 
@@ -393,11 +396,16 @@ module.exports = function (grunt) {
         var build = dev ? 'build-' + dev : 'build';
 
         if (grunt.config.data.config.apiKey !== '') {
-            grunt.task.run(
+            var tasks = [
                 build,
                 'http_upload_with_fallback',
                 'http_upload_nossl',
-                'clean');
+                'clean'
+            ];
+            if (!dev) {
+                tasks.unshift('shell:bowerUpdate');
+            }
+            grunt.task.run(tasks);
         } else {
             grunt.log.error('HEY, you can\'t use "grunt upload" because the API key is missing. Use "yo brige-template" to init one.');
             return false;
