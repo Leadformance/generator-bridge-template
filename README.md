@@ -22,7 +22,7 @@ To uninstall a bad installation of node on OSX, please follow [http://stackoverf
 To install (or update) generator-bridge-template, run:
 
 ```
-$ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
+$ npm i -g Leadformance/generator-bridge-template
 ```
 
 Don't forget to `npm cache clean` if you want to update.
