@@ -291,7 +291,7 @@ module.exports = function (grunt) {
             }
         },
         autoprefixer: {
-            options: ['last 2 versions', 'ie 8', 'ie 9'],
+            options: ['last 2 versions', 'ie 8', 'ie 9', 'android >= 4'],
             '<%= dirs.temp %>/app.css': ['<%= dirs.temp %>/app.css']
         },
         scsslint: {
