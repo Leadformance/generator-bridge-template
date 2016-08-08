@@ -10,9 +10,6 @@
     "email": "<%= pkg.author.email %>",
     "url": "<%= pkg.author.url %>"
   },
-  "scripts": {
-    "postinstall": "bower install"
-  },
   "devDependencies": {
     "autoprefixer": "6.2.3",
     "babelify": "6.4.0",
