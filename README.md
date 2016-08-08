@@ -68,7 +68,7 @@ Update the generator itself ([see full instructions](#install-or-update-the-gene
 
 ```
 $ npm cache clean
-$ npm install -g git+https://github.com/Leadformance/generator-bridge-template.git
+$ npm i -g Leadformance/generator-bridge-template
 ```
 
 Then, while in the folder of the template, generate Grunt tasks once again
