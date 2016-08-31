@@ -8,10 +8,12 @@ module.exports = function (grunt) {
     require('load-grunt-tasks')(grunt);
     require('time-grunt')(grunt);
 
-    var zipName = grunt.option('dest') || '_template';
-
     grunt.initConfig({
         config: grunt.file.readJSON('.bridge-apikey.json'),
+
+        path: {
+            zipDestination: grunt.option('dest') || 'dist/_template.zip'
+        },
 
         dirs: {
             app: 'app',
@@ -267,7 +269,7 @@ module.exports = function (grunt) {
         compress: {
             build: {
                 options: {
-                    archive: '<%= dirs.dist %>/' + zipName + '.zip',
+                    archive: '<%= path.zipDestination %>',
                     level: 9,
                     pretty: true
                 },
@@ -290,7 +292,7 @@ module.exports = function (grunt) {
                 }
             },
             upload: {
-                command: 'curl -F "template=@<%= dirs.dist %>/' + zipName + '.zip" -F "_method=PUT" --insecure "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
+                command: 'curl -F "template=<%= path.zipDestination %>" -F "_method=PUT" --insecure "<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>"',
                 options: {
                     callback: shellUploadCallback
                 }
@@ -306,7 +308,7 @@ module.exports = function (grunt) {
                     url: '<%= config.serverUrl %>/templates/<%= config.templateSlot %>.json?oauth_token=<%= config.apiKey %>',
                     method: 'PUT'
                 },
-                src: '<%= dirs.dist %>/' + zipName + '.zip',
+                src: '<%= path.zipDestination %>',
                 dest: 'template'
             },
             nossl: {
@@ -315,7 +317,7 @@ module.exports = function (grunt) {
                     method: 'PUT',
                     rejectUnauthorized: false
                 },
-                src: '<%= dirs.dist %>/' + zipName + '.zip',
+                src: '<%= path.zipDestination %>',
                 dest: 'template'
             }
         }
