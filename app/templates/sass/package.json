@@ -34,6 +34,6 @@
     "grunt-notify": "~0.2.17",
     "grunt-http-upload": "~0.1.6",
     "grunt-bower-concat": "~0.4.0",
-    "request": "~2.34.0"
+    "request": "~2.88.2"
   }
 }
