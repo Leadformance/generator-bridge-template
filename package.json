@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "yeoman-generator": "~0.17.7",
-    "request": "~2.34.0",
+    "request": "~2.88.2",
     "lodash": "~2.4.1"
   },
   "peerDependencies": {
